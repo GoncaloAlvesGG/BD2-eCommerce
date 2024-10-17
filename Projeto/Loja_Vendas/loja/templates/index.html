@@ -26,6 +26,7 @@
     {% load static %}
 </head>
 <body>
+    <!-- Navbar -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
         <div class="container">
             <a class="navbar-brand" href="#">Loja de Vendas</a>
@@ -37,24 +38,19 @@
                     <li class="nav-item">
                         <a class="nav-link" href="{% url 'carrinho' %}">Carrinho</a>
                     </li>
-                    <!-- Mostrar apenas se o utilizador estiver autenticado -->
-                    {% if user.is_authenticated %}
+                    <!-- Exibir as opções para o utilizador autenticado -->
                     <li class="nav-item">
                         <a class="nav-link" href="{% url 'perfil' %}">Perfil</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="{% url 'logout' %}">Logout</a>
                     </li>
-                    {% else %}
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'login' %}">Login</a>
-                    </li>
-                    {% endif %}
                 </ul>
             </div>
         </div>
     </nav>
 
+    <!-- Produtos em Destaque -->
     <div class="container mt-5">
         <h1 class="text-center mb-5">Produtos em Destaque</h1>
 
@@ -62,6 +58,7 @@
             {% for produto in produtos %}
             <div class="col-md-4 mb-4">
                 <div class="card shadow-sm h-100">
+                    <!-- Exemplo de imagem de produto estática -->
                     <img src="{% static 'images/monitor.webp' %}" class="card-img-top" alt="Imagem do Produto">
                     <div class="card-body">
                         <h5 class="card-title">{{ produto.nome }}</h5>
@@ -75,6 +72,7 @@
         </div>
     </div>
 
+    <!-- Rodapé -->
     <footer class="text-center py-4 mt-5">
         <p>&copy; 2024 Loja de Vendas - Todos os direitos reservados</p>
     </footer>

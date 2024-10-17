@@ -27,16 +27,37 @@ def checkout(request):
     # Página de checkout (vazia por enquanto)
     return render(request, 'checkout.html')
 
-@login_required
 def perfil(request):
-    compras = Compra.objects.filter(utilizador=request.user).order_by('-data_compra')
-    
-    if request.method == 'POST':
-        form = UserChangeForm(request.POST, instance=request.user)
-        if form.is_valid():
-            form.save()
-            return redirect('perfil')
+    # Página de checkout (vazia por enquanto)
+    return render(request, 'perfil.html')
+
+# @login_required
+def perfil(request):
+    if request.user.is_authenticated:
+        compras = Compra.objects.filter(utilizador=request.user).order_by('-data_compra')
+
+        if request.method == 'POST':
+            form = UserChangeForm(request.POST, instance=request.user)
+            if form.is_valid():
+                form.save()
+                return redirect('perfil')
+        else:
+            form = UserChangeForm(instance=request.user)
     else:
-        form = UserChangeForm(instance=request.user)
+        # Se o utilizador não estiver autenticado, define variáveis vazias
+        compras = None
+        form = None
     
     return render(request, 'perfil.html', {'compras': compras, 'form': form})
+
+
+def recuperar_senha(request):
+    return render(request, 'recuperar_pass.html')
+
+def perfil_admin(request):
+    admin_info = {
+        'nome': 'Admin Nome',
+        'email': 'admin@example.com',
+        'data_registro': '01/01/2023'
+    }
+    return render(request, 'perfil_admin.html', {'admin': admin_info})

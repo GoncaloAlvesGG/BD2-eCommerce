@@ -10,5 +10,6 @@ urlpatterns = [
     path('carrinho/', views.carrinho, name='carrinho'),  # Carrinho de compras
     path('checkout/', views.checkout, name='checkout'),  # Finalização da compra
     path('perfil/', views.perfil, name='perfil'), # Perfil do usuário
-    
+    path('recuperar_senha/', views.recuperar_senha, name='recuperar_senha'),  # Recuperar senha
+    path('admin/perfil/', views.perfil_admin, name='perfil_admin'), # Perfil do admin
 ]

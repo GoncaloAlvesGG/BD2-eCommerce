@@ -9,6 +9,12 @@
         /* Personalizar o fundo e estilo da loja */
         body {
             background-color: #f8f9fa;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh; /* Altura mínima da tela */
+        }
+        .content {
+            flex: 1; /* Permite que o conteúdo ocupe o espaço disponível */
         }
         .card:hover {
             transform: scale(1.05);
@@ -21,6 +27,10 @@
         footer {
             background-color: #343a40;
             color: white;
+            /* Faz o rodapé colar ao final da página */
+            position: relative;
+            bottom: 0;
+            width: 100%;
         }
     </style>
 </head>
@@ -31,7 +41,7 @@
         </div>
     </nav>
 
-    <div class="container mt-5">
+    <div class="container mt-5 content">
         <h1>Perfil do Utilizador</h1>
         
         <!-- Definições de utilizador -->
@@ -80,7 +90,7 @@
         </div>
     </div>
 
-    <footer class="bg-dark text-light text-center py-4 mt-5">
+    <footer class="bg-dark text-light text-center py-4">
         <p>&copy; 2024 Loja de Vendas</p>
     </footer>
 
