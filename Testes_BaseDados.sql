@@ -1,5 +1,58 @@
 --Utilizador
 --Inserir Utilizador
+CREATE OR REPLACE FUNCTION sp_Utilizador_CREATE(
+    p_nome VARCHAR,
+    p_email VARCHAR,
+    p_senha VARCHAR,
+    p_isAdmin BOOLEAN
+) RETURNS VOID AS $$
+BEGIN
+    -- Tentativa de inserção na tabela utilizador
+    BEGIN
+        INSERT INTO utilizador (nome, email, senha, isAdmin)
+        VALUES (p_nome, p_email, p_senha, p_isAdmin);
+    EXCEPTION
+        WHEN OTHERS THEN
+            -- Em caso de erro, capturar a exceção
+            RAISE EXCEPTION 'Erro na inserção do utilizador: %', SQLERRM;
+    END;
+END
+$$ LANGUAGE plpgsql;
+
+-- Função de teste para verificar se o utilizador foi inserido corretamente
+CREATE OR REPLACE FUNCTION TEST_Utilizador_CREATE(
+    p_nome VARCHAR,
+    p_email VARCHAR,
+    p_senha VARCHAR,
+    p_isAdmin BOOLEAN
+) RETURNS TEXT AS $$
+DECLARE
+    contador INTEGER;
+    resultado TEXT;
+BEGIN
+    -- Chamar o procedimento de inserção
+    PERFORM sp_Utilizador_CREATE(p_nome, p_email, p_senha, p_isAdmin);
+
+    -- Verificar se o valor foi inserido corretamente
+    SELECT COUNT(*)
+    INTO contador
+    FROM utilizador
+    WHERE email = p_email;
+
+    IF contador > 0 THEN
+        resultado := 'OK';
+    ELSE
+        resultado := 'NOK';
+    END IF;
+
+    -- Retorna o resultado do teste
+    RETURN resultado;
+END
+$$ LANGUAGE plpgsql;
+
+-- Exemplo de chamada para a função de teste
+SELECT TEST_Utilizador_CREATE('João Silva', 'joao.silva123@email.com', 'senha123', true);
+
 
 --Categoria
 --Inserir Categoria
@@ -140,6 +193,56 @@ $$ LANGUAGE plpgsql;
 
 -- Exemplo de chamada para a função de teste
 SELECT TEST_Categoria_UPDATE(1, 'Tecnologia');
+
+--Eliminar Categoria
+CREATE OR REPLACE FUNCTION sp_Categoria_DELETE(
+    p_categoria_id INT
+) RETURNS VOID AS $$
+BEGIN
+    -- Tentativa de exclusão na tabela categoria
+    BEGIN
+        DELETE FROM categoria
+        WHERE categoria_id = p_categoria_id;
+
+    EXCEPTION
+        WHEN OTHERS THEN
+            -- Em caso de erro, capturar a exceção
+            RAISE EXCEPTION 'Erro na exclusão da categoria: %', SQLERRM;
+    END;
+END
+$$ LANGUAGE plpgsql;
+
+-- Função de teste para verificar se a categoria foi excluída corretamente
+CREATE OR REPLACE FUNCTION TEST_Categoria_DELETE(
+    p_categoria_id INT
+) RETURNS TEXT AS $$
+DECLARE
+    contador INTEGER;
+    resultado TEXT;
+BEGIN
+    -- Chamar o procedimento de exclusão
+    PERFORM sp_Categoria_DELETE(p_categoria_id);
+
+    -- Verificar se a categoria foi excluída corretamente
+    SELECT COUNT(*)
+    INTO contador
+    FROM categoria
+    WHERE categoria_id = p_categoria_id;
+
+    IF contador = 0 THEN
+        resultado := 'OK';
+    ELSE
+        resultado := 'NOK';
+    END IF;
+
+    -- Retorna o resultado do teste
+    RETURN resultado;
+END
+$$ LANGUAGE plpgsql;
+
+-- Exemplo de chamada para a função de teste
+-- Atenção as chaves estrangeiras!
+SELECT TEST_Categoria_DELETE(1);
 
 
 --Produto
