@@ -38,7 +38,6 @@
                     <li class="nav-item">
                         <a class="nav-link" href="{% url 'carrinho' %}">Carrinho</a>
                     </li>
-                    <!-- Exibir as opções para o utilizador autenticado -->
                     <li class="nav-item">
                         <a class="nav-link" href="{% url 'perfil' %}">Perfil</a>
                     </li>
@@ -50,6 +49,45 @@
         </div>
     </nav>
 
+    <!-- Barra de pesquisa e filtros -->
+    <div class="container mt-4">
+        <!-- Barra de Pesquisa -->
+        <div class="row mb-3">
+            <div class="col-md-10">
+                <input type="text" class="form-control" placeholder="Procurar produtos por nome" id="searchInput">
+            </div>
+            <div class="col-md-2">
+                <button class="btn btn-primary w-100">Buscar</button>
+            </div>
+        </div>
+
+        <!-- Filtros de Categoria e Faixa de Preço -->
+        <div class="row mb-4">
+            <div class="col-md-4">
+                <select class="form-select" id="categoryFilter">
+                    <option value="" selected>Todas as categorias</option>
+                    <option value="eletronicos">Eletrônicos</option>
+                    <option value="informatica">Informática</option>
+                    <option value="eletrodomesticos">Eletrodomésticos</option>
+                </select>
+            </div>
+            <div class="col-md-4">
+                <select class="form-select" id="priceFilter">
+                    <option value="" selected>Faixa de preço</option>
+                    <option value="0-50">€ 0 - € 50</option>
+                    <option value="50-100">€ 50 - € 100</option>
+                    <option value="100-200">€ 100 - € 200</option>
+                    <option value="200-500">€ 200 - € 500</option>
+                    <option value="500+">Mais de € 500</option>
+                </select>
+            </div>
+            <div class="col-md-4">
+                <!-- Botão "Aplicar Filtros" sempre ativo -->
+                <button class="btn btn-outline-secondary w-100" id="applyFiltersButton">Aplicar Filtros</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Produtos em Destaque -->
     <div class="container mt-5">
         <h1 class="text-center mb-5">Produtos em Destaque</h1>
@@ -58,7 +96,57 @@
             {% for produto in produtos %}
             <div class="col-md-4 mb-4">
                 <div class="card shadow-sm h-100">
-                    <!-- Exemplo de imagem de produto estática -->
+                    <img src="{% static 'images/monitor.webp' %}" class="card-img-top" alt="Imagem do Produto">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ produto.nome }}</h5>
+                        <p class="card-text">{{ produto.descricao|truncatewords:15 }}</p>
+                        <p class="card-text text-success fw-bold">€ {{ produto.preco }}</p>
+                        <a href="{% url 'produto_detalhe' produto.id %}" class="btn btn-primary">Ver Detalhes</a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        <div class="row">
+            {% for produto in produtos %}
+            <div class="col-md-4 mb-4">
+                <div class="card shadow-sm h-100">
+                    <img src="{% static 'images/monitor.webp' %}" class="card-img-top" alt="Imagem do Produto">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ produto.nome }}</h5>
+                        <p class="card-text">{{ produto.descricao|truncatewords:15 }}</p>
+                        <p class="card-text text-success fw-bold">€ {{ produto.preco }}</p>
+                        <a href="{% url 'produto_detalhe' produto.id %}" class="btn btn-primary">Ver Detalhes</a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Produtos de Tecnologia -->
+    <div class="container mt-5">
+        <h1 class="text-center mb-5">Produtos de Tecnologia</h1>
+
+        <div class="row">
+            {% for produto in produtos %}
+            <div class="col-md-4 mb-4">
+                <div class="card shadow-sm h-100">
+                    <img src="{% static 'images/monitor.webp' %}" class="card-img-top" alt="Imagem do Produto">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ produto.nome }}</h5>
+                        <p class="card-text">{{ produto.descricao|truncatewords:15 }}</p>
+                        <p class="card-text text-success fw-bold">€ {{ produto.preco }}</p>
+                        <a href="{% url 'produto_detalhe' produto.id %}" class="btn btn-primary">Ver Detalhes</a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        <div class="row">
+            {% for produto in produtos %}
+            <div class="col-md-4 mb-4">
+                <div class="card shadow-sm h-100">
                     <img src="{% static 'images/monitor.webp' %}" class="card-img-top" alt="Imagem do Produto">
                     <div class="card-body">
                         <h5 class="card-title">{{ produto.nome }}</h5>

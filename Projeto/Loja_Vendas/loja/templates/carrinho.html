@@ -31,14 +31,31 @@
     </style>
 </head>
 <body>
+    <!-- Navbar -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
         <div class="container">
-            <a class="navbar-brand" href="{% url 'index' %}">Loja de Vendas</a>
+            <a class="navbar-brand" href="#">Loja de Vendas</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'carrinho' %}">Carrinho</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'perfil' %}">Perfil</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'logout' %}">Logout</a>
+                    </li>
+                </ul>
+            </div>
         </div>
     </nav>
 
     <div class="container mt-5 content"> <!-- Adicionado class 'content' -->
-        <h1 class="text-center mb-4">Seu Carrinho</h1>
+        <h1 class="text-center mb-4">Carrinho de Compras</h1>
 
         <table class="table table-bordered">
             <thead class="table-dark">
