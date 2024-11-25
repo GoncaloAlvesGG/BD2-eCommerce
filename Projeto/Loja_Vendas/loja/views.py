@@ -2,6 +2,7 @@ from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 from .models import Compra
 from django.contrib.auth.forms import UserChangeForm
+from .forms import UserSettingsForm
 
 # Dados fictícios
 produtos = [
@@ -27,9 +28,18 @@ def checkout(request):
     # Página de checkout (vazia por enquanto)
     return render(request, 'checkout.html')
 
-def perfil(request):
-    # Página de checkout (vazia por enquanto)
-    return render(request, 'perfil.html')
+def user_profile(request):
+    if request.method == 'POST':
+        form = UserSettingsForm(request.POST)
+        if form.is_valid():
+            # Salve as definições do utilizador aqui
+            pass
+    else:
+        form = UserSettingsForm()  # Pode preencher com dados existentes, se necessário
+
+    compras = []  # Suponha que você tenha uma forma de obter compras do utilizador
+
+    return render(request, 'seu_template.html', {'form': form, 'compras': compras})
 
 # @login_required
 def perfil(request):
