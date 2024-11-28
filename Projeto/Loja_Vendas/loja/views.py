@@ -4,21 +4,28 @@ from .models import Compra
 from django.contrib.auth.forms import UserChangeForm
 from .forms import UserSettingsForm
 
-# Dados fictícios
+#dados ficticios
 produtos = [
-    {'id': 1, 'nome': 'Produto 1', 'preco': 19.99, 'descricao': 'Descrição do produto 1'},
-    {'id': 2, 'nome': 'Produto 2', 'preco': 29.99, 'descricao': 'Descrição do produto 2'},
-    {'id': 3, 'nome': 'Produto 3', 'preco': 39.99, 'descricao': 'Descrição do produto 3'},
+    {'id': 1, 'nome': 'Produto 1', 'preco': 99.99, 'descricao': 'Descrição breve do produto.'},
+    {'id': 2, 'nome': 'Produto 2', 'preco': 149.99, 'descricao': 'Descrição breve do produto.'},
+    {'id': 3, 'nome': 'Produto 3', 'preco': 199.99, 'descricao': 'Descrição breve do produto.'},
+    {'id': 4, 'nome': 'Produto 4', 'preco': 129.99, 'descricao': 'Descrição breve do produto.'},
+    {'id': 5, 'nome': 'Produto 5', 'preco': 299.99, 'descricao': 'Descrição breve do produto.'},
+    {'id': 6, 'nome': 'Produto 6', 'preco': 99.99, 'descricao': 'Descrição breve do produto.'},
+    {'id': 7, 'nome': 'Produto 7', 'preco': 79.99, 'descricao': 'Descrição breve do produto.'},
+    {'id': 8, 'nome': 'Produto 8', 'preco': 49.99, 'descricao': 'Descrição breve do produto.'},
 ]
+
+def produto_detalhe(request, id):
+    produto = next((p for p in produtos if p['id'] == id), None)
+    if produto:
+        return render(request, 'produto_detalhe.html', {'produto': produto})
+    else:
+        return render(request, '404.html', status=404)
 
 def index(request):
     # Página inicial com a lista de produtos
     return render(request, 'index.html', {'produtos': produtos})
-
-def produto_detalhe(request, id):
-    # Detalhes do produto
-    produto = next((p for p in produtos if p['id'] == id), None)
-    return render(request, 'produto_detalhe.html', {'produto': produto})
 
 def carrinho(request):
     # Página do carrinho (vazia por enquanto)
