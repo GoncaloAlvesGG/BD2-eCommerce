@@ -1,298 +1,220 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <title>Perfil do Utilizador</title>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
-    <style>
-        /* Reset básico */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+{% extends 'base.html' %}
 
-        body {
-            font-family: Arial, sans-serif;
-            color: #333; /* Cor neutra para texto */
-            overflow-x: hidden; /* Evita a rolagem horizontal */
-            background-color: #f8f9fa;
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh; /* Altura mínima da tela */
-            justify-content: space-between; /* Garante que o rodapé fique na parte inferior */
-        }
+{% block title %}Perfil do Utilizador{% endblock %}
 
-        /* Cabeçalho com menu hamburger */
-        header {
-            display: flex;
-            justify-content: center; /* Centraliza o nome da loja */
-            align-items: center;
-            padding: 20px 20px;
-            background-color: #555; /* Cor neutra para o fundo */
-            color: white;
-            height: 80px; /* Aumentando a altura da navbar */
-            position: relative;
-            z-index: 10; /* Garante que a navbar fique sempre no topo */
-        }
+{% block content %}
+<style>
+    .container {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+        margin-top: 20px; /* Ajustado para evitar deslocamento negativo */
+    }
 
-        .logo {
-            font-size: 1.8rem;
-            font-weight: bold;
-            text-align: center;
-            flex-grow: 1; /* Faz a logo ocupar o centro */
-        }
+    .profile-container, .orders-container {
+        background-color: #ffffff;
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        padding: 20px;
+        width: 100%;
+    }
 
-        .menu-icon {
-            font-size: 2rem;
-            cursor: pointer;
-            position: absolute;
-            left: 50px;
-        }
+    .header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        border-bottom: 1px solid #ddd;
+        padding-bottom: 20px;
+        margin-bottom: 20px;
+    }
 
-        .cart-icon {
-            position: absolute;
-            right: 20px;
-            font-size: 1.5rem;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
+    .info h1 {
+        font-size: 2rem;
+        margin-bottom: 10px;
+    }
 
-        .cart-icon a {
-            color: white;
-            text-decoration: none;
-            font-size: 1rem;
-            font-weight: bold;
-            display: flex;
-            align-items: center;
-        }
+    .info p {
+        font-size: 1rem;
+        color: #666;
+    }
 
-        .cart-icon i {
-            font-size: 1.5rem;
-        }
+    .actions {
+        text-align: right;
+    }
 
-        /* Estilo do menu hamburguer */
-        nav {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 250px;
-            height: 100%;
-            background-color: #444;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: flex-start;
-            padding-top: 20px;
-            transform: translateX(-100%);
-            transition: transform 0.3s ease;
-            z-index: 20;
-        }
+    .actions .btn {
+        padding: 10px 20px;
+        background-color: #007bff;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: background-color 0.3s;
+        margin-left: 10px;
+    }
 
-        nav.active {
-            transform: translateX(0);
-        }
+    .actions .btn:hover {
+        background-color: #0056b3;
+    }
 
-        /* Perfil */
-        .profile {
-            text-align: center;
-            margin-bottom: 30px;
-        }
+    .form-container, .orders-table-container {
+        display: none;
+        margin-top: 20px;
+    }
 
-        .profile img {
-            width: 80px;
-            height: 80px;
-            border-radius: 50%;
-            margin-bottom: 10px;
-            border: 2px solid white;
-        }
+    .form-group {
+        display: flex;
+        flex-direction: column;
+        margin-bottom: 15px;
+    }
 
-        .profile h4 {
-            color: white;
-            font-size: 1.2rem;
-            margin-bottom: 5px;
-        }
+    .form-group label {
+        margin-bottom: 5px;
+        font-weight: bold;
+    }
 
-        .profile p {
-            color: #aaa;
-            font-size: 0.9rem;
-        }
+    .form-group input {
+        padding: 10px;
+        font-size: 1rem;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        width: 100%;
+    }
 
-        /* Seta de voltar */
-        .back-arrow {
-            font-size: 1.5rem;
-            color: white;
-            margin-bottom: 30px;
-            cursor: pointer;
-            padding: 10px;
-            transition: color 0.3s ease;
-        }
+    .form-group input:focus {
+        border-color: #28a745;
+        outline: none;
+    }
 
-        .back-arrow:hover {
-            color: #e76f51; /* Cor do hover na seta */
-        }
+    .btn-save, .btn-cancel {
+        padding: 10px 20px;
+        font-size: 1rem;
+        border-radius: 5px;
+        cursor: pointer;
+        border: none;
+        color: white;
+        transition: background-color 0.3s;
+    }
 
-        nav a {
-            color: white;
-            text-decoration: none;
-            font-size: 1.5rem;
-            margin: 15px 0;
-            padding: 10px;
-            width: 80%; /* Botões de navegação mais largos */
-            text-align: center;
-            border-radius: 5px;
-            transition: background-color 0.3s ease;
-        }
+    .btn-save {
+        background-color: #28a745;
+    }
 
-        nav a:hover {
-            background-color: #e76f51; /* Cor do hover */
-        }
+    .btn-save:hover {
+        background-color: #218838;
+    }
 
-        /* Logout no fundo */
-        .logout {
-            margin-top: auto;
-            margin-bottom: 20px;
-        }
+    .btn-cancel {
+        background-color: #dc3545;
+    }
 
-        /* Corpo da página e melhorias no formulário */
-        .content {
-            padding: 20px;
-            flex-grow: 1; /* Permite que o conteúdo ocupe o máximo de espaço possível */
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
+    .btn-cancel:hover {
+        background-color: #c82333;
+    }
 
-        .content h1 {
-            font-size: 2rem;
-            color: #333;
-            margin-bottom: 20px;
-        }
+    .orders-header {
+        font-size: 1.5rem;
+        margin-bottom: 20px;
+    }
 
-        /* Formulário de edição */
-        .profile-edit {
-            background-color: white;
-            padding: 30px;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            max-width: 600px; /* Limite de largura maior para telas grandes */
-            width: 100%; /* Faz o formulário ocupar 100% do seu container */
-            margin-top: 30px; /* Adiciona espaço entre o título e o formulário */
-            display: flex;
-            flex-direction: column;
-        }
+    .orders-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
 
-        .profile-edit label {
-            display: block;
-            margin-bottom: 10px;
-            font-weight: bold;
-            color: #333;
-        }
+    .orders-table th, .orders-table td {
+        padding: 10px;
+        text-align: left;
+        border-bottom: 1px solid #ddd;
+    }
 
-        .profile-edit input[type="text"],
-        .profile-edit input[type="email"],
-        .profile-edit input[type="password"] {
-            width: 100%;
-            padding: 12px;
-            margin-bottom: 20px;
-            border-radius: 5px;
-            border: 1px solid #ddd;
-            font-size: 1rem;
-        }
+    .orders-table th {
+        background-color: #f8f9fa;
+    }
 
-        .profile-edit button {
-            background-color: #28a745;
-            color: white;
-            border: none;
-            padding: 12px 20px;
-            border-radius: 5px;
-            font-size: 1.2rem;
-            cursor: pointer;
-            transition: background-color 0.3s;
-        }
+    .orders-table tr:hover {
+        background-color: #f1f1f1;
+    }
+</style>
 
-        .profile-edit button:hover {
-            background-color: #218838;
-        }
-
-        .profile-edit input[type="password"]:focus,
-        .profile-edit input[type="text"]:focus,
-        .profile-edit input[type="email"]:focus {
-            border-color: #28a745; /* Cor da borda ao focar */
-            outline: none; /* Remove o contorno padrão */
-        }
-
-        /* Rodapé elegante */
-        footer {
-            background-color: #343a40;
-            color: #f8f9fa;
-            padding: 40px 0;
-            text-align: center; /* Centraliza o conteúdo do rodapé */
-        }
-
-        footer .social-icons a {
-            color: #ffffff;
-            margin: 0 15px;
-            font-size: 1.5em;
-            transition: color 0.3s;
-        }
-
-        footer .social-icons a:hover {
-            color: #ffc107;
-        }
-    </style>
-</head>
-<body>
-    <!-- Cabeçalho -->
-    <header>
-        <div class="menu-icon" onclick="toggleMenu()">☰</div>
-        <div class="logo">Minha Loja</div>
-    </header>
-
-    <!-- Menu Hamburger -->
-    <nav id="sideMenu">
-        <div class="back-arrow" onclick="toggleMenu()">←</div>
-        <div class="profile">
-            <img src="/static/images/perfil.png" alt="Foto do Utilizador">
-            <h4>Eduardo Carvalho</h4>
-            <p>eduardo@gmail.com</p>
+<div class="container">
+    <!-- Retângulo de Informações do Perfil -->
+    <div class="profile-container">
+        <div class="header">
+            <div class="info">
+                <h1>Eduardo Carvalho</h1>
+                <p>Email: <strong>eduardo@gmail.com</strong></p>
+            </div>
+            <div class="actions">
+                <button class="btn" onclick="toggleVisibility('editForm')">Editar Perfil</button>
+            </div>
         </div>
-        <a href="{% url 'index' %}">Página Inicial</a>
-        <a href="{% url 'perfil' %}">Perfil</a>
-        <a href="#">Contacto</a>
-        <a href="#" class="logout">Logout</a>
-    </nav>
 
-    <!-- Conteúdo principal -->
-    <div class="content">
-        <h1>Perfil do Utilizador</h1>
-
-        <!-- Seção de edição do perfil -->
-        <div class="profile-edit">
+        <div class="form-container" id="editForm">
             <h2>Editar Perfil</h2>
             <form action="#" method="POST">
-                <label for="username">Nome</label>
-                <input type="text" id="username" name="username" value="Eduardo Carvalho" required>
-
-                <label for="email">Email</label>
-                <input type="email" id="email" name="email" value="eduardo@gmail.com" required>
-
-                <button type="submit">Salvar Alterações</button>
+                <div class="form-group">
+                    <label for="username">Nome</label>
+                    <input type="text" id="username" name="username" value="Eduardo Carvalho" required>
+                </div>
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" name="email" value="eduardo@gmail.com" required>
+                </div>
+                <div class="form-group">
+                    <label for="password">Senha</label>
+                    <input type="password" id="password" name="password" placeholder="Insira nova senha">
+                </div>
+                <button type="submit" class="btn-save">Salvar Alterações</button>
+                <button type="button" class="btn-cancel" onclick="toggleVisibility('editForm')">Cancelar</button>
             </form>
         </div>
     </div>
 
-    <!-- Rodapé -->
-    <footer>
-        <p>&copy; 2024 Loja de Vendas - Todos os direitos reservados</p>
-    </footer>
+    <!-- Retângulo de Encomendas -->
+    <div class="orders-container">
+        <div class="header">
+            <h2>Minhas Encomendas</h2>
+            <button type="button" class="btn" onclick="toggleVisibility('ordersTable')">Ver Encomendas</button>
+        </div>
 
-    <script>
-        function toggleMenu() {
-            document.getElementById('sideMenu').classList.toggle('active');
-        }
-    </script>
-</body>
-</html>
+        <div class="orders-table-container" id="ordersTable">
+            <table class="orders-table">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Data</th>
+                        <th>Itens</th>
+                        <th>Total</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>1</td>
+                        <td>01/12/2024</td>
+                        <td>Produto A, Produto B</td>
+                        <td>€50,00</td>
+                        <td>Concluído</td>
+                    </tr>
+                    <tr>
+                        <td>2</td>
+                        <td>25/11/2024</td>
+                        <td>Produto C</td>
+                        <td>€25,00</td>
+                        <td>Processando</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+    function toggleVisibility(sectionId) {
+        const section = document.getElementById(sectionId);
+        section.style.display = section.style.display === 'none' || section.style.display === '' ? 'block' : 'none';
+    }
+</script>
+{% endblock %}

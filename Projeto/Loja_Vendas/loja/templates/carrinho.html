@@ -1,34 +1,74 @@
-{% extends "base.html" %}
+{% extends 'base.html' %}
 
-{% block content %}
-<div class="container mt-5 content">
-    <h1 class="text-center mb-4">Carrinho de Compras</h1>
+{% block content %} 
+<style>
+    body {
+        overflow-y: auto;
+        display: flex;
+        justify-content: center;
+        min-height: 100vh; /* Para que o conteúdo ocupe toda a altura da tela */
+        margin: 0;
+    }
+    .container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        overflow-y: auto; /* Permite rolagem vertical do container */
+        width: 100%; /* Define a largura da área do conteúdo */
+    }
+    .title {
+        text-align: center;
+        margin-top: -150px;
+        margin-bottom: 20px;
+    }
+    .table-container {
+        margin-top: 20px; /* Ajuste para a distância entre o título e a tabela */
+        width: 100%;
+    }
+    .table {
+        margin: 0 auto; /* Centraliza a tabela horizontalmente */
+    }
+</style>
+<div class="container">
+    <h1 class="title">Carrinho de Compras</h1>
 
-    <table class="table table-bordered">
-        <thead class="table-dark">
-            <tr>
-                <th>Produto</th>
-                <th>Quantidade</th>
-                <th>Preço Unitário</th>
-                <th>Total</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr>
-                <td>Produto Exemplo</td>
-                <td>1</td>
-                <td>€19.99</td>
-                <td>€19.99</td>
-            </tr>
-            <tr>
-                <td colspan="3" class="text-end"><strong>Total</strong></td>
-                <td><strong>€19.99</strong></td>
-            </tr>
-        </tbody>
-    </table>
+    <div class="table-container">
+        <table class="table table-striped mt-2">
+            <thead>
+                <tr>
+                    <th>Produto</th>
+                    <th>Quantidade</th>
+                    <th>Preço Unitário</th>
+                    <th>Subtotal</th>
+                    <th>Ação</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Produto 1</td>
+                    <td>2</td>
+                    <td>49,90 €</td>
+                    <td>99,80 €</td>
+                    <td>
+                        <button class="btn btn-sm btn-danger">Remover</button>
+                    </td>
+                </tr>
+                <tr>
+                    <td>Produto 2</td>
+                    <td>1</td>
+                    <td>79,90 €</td>
+                    <td>79,90 €</td>
+                    <td>
+                        <button class="btn btn-sm btn-danger">Remover</button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
 
-    <div class="text-center mt-4">
-        <a href="{% url 'checkout' %}" class="btn btn-success">Finalizar Compra</a>
+    <div class="text-end mt-4">
+        <h4>Total: 239,67 €</h4>
+        <a href="{% url 'checkout' %}" class="btn btn-success btn-lg">Finalizar Compra</a>
     </div>
 </div>
 {% endblock %}

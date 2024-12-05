@@ -1,22 +1,56 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="container mt-5 content">
-    <h1 class="text-center">Finalizar Compra</h1>
-    <form class="mt-4">
-        <div class="mb-3">
-            <label for="nome" class="form-label">Nome Completo</label>
-            <input type="text" class="form-control" id="nome" placeholder="Seu nome">
-        </div>
-        <div class="mb-3">
-            <label for="endereco" class="form-label">Endereço</label>
-            <input type="text" class="form-control" id="endereco" placeholder="Endereço completo">
-        </div>
-        <div class="mb-3">
-            <label for="cartao" class="form-label">Número do Cartão</label>
-            <input type="text" class="form-control" id="cartao" placeholder="XXXX-XXXX-XXXX-XXXX">
-        </div>
-        <button type="submit" class="btn btn-success w-100">Finalizar Compra</button>
-    </form>
+<style>
+    body {
+        display: flex;
+        justify-content: center;
+        margin: 0;
+        overflow-y: auto;
+    }
+    .container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        width: 100%;
+        max-width: 600px;
+        box-sizing: border-box;
+    }
+    .content {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+    .content h1 {
+        margin-top: -150px;
+    }
+    .form {
+        width: 100%;
+    }
+    .form .btn {
+        display: block; /* Faz o botão ocupar uma linha inteira */
+        margin: 20px auto 0; /* Centraliza horizontalmente e adiciona espaço no topo */
+    }
+</style>
+
+<div class="container">
+    <div class="content">
+        <h1 class="text-center">Finalizar Compra</h1>
+        <form class="form mt-4">
+            <div class="mb-3">
+                <label for="nome" class="form-label">Nome Completo</label>
+                <input type="text" class="form-control" id="nome" placeholder="Seu nome">
+            </div>
+            <div class="mb-3">
+                <label for="endereco" class="form-label">Endereço</label>
+                <input type="text" class="form-control" id="endereco" placeholder="Endereço completo">
+            </div>
+            <div class="mb-3">
+                <label for="cartao" class="form-label">Número do Cartão</label>
+                <input type="text" class="form-control" id="cartao" placeholder="XXXX-XXXX-XXXX-XXXX">
+            </div>
+            <button type="submit" class="btn btn-success btn-lg">Finalizar Compra</button>
+        </form>
+    </div>
 </div>
 {% endblock %}

@@ -5,16 +5,121 @@
 {% block title %}Produtos - Minha Loja{% endblock %}
 
 {% block content %}
-<!-- Produtos -->
-<div class="container">
-    {% for produto in produtos %}
-    <a href="{% url 'produto_detalhe' produto.id %}" class="card">
-        <img src="{% static 'images/monitor_escuro.jpg' %}" alt="{{ produto.nome }}">
-        <h3>{{ produto.nome }}</h3>
-        <p>{{ produto.descricao }}</p>
-        <div class="price">{{ produto.preco }} €</div>
-        <button>Comprar Agora</button>
-    </a>
-    {% endfor %}
-</div>
+<style>
+    /* Estilo dos cards */
+    .container {
+        display: flex;
+        justify-content: center;
+        align-items: stretch; /* Alinha os cards para terem a mesma altura */
+        min-height: 100vh; /* Centraliza os cards verticalmente */
+        flex-wrap: wrap;
+        gap: 20px;
+        padding: 20px;
+        width: 100vw; /* Largura total da página */
+        position: relative; /* Garante que o conteúdo fique acima do menu quando ele estiver oculto */
+        z-index: 10; /* Cards ficam acima do menu */
+        box-sizing: border-box;
+    }
+    
+    .card {
+        display: flex;
+        flex-direction: column; /* Permite que o conteúdo cresça verticalmente */
+        justify-content: space-between; /* Distribui o conteúdo uniformemente */
+        text-decoration: none; /* Remove o sublinhado do link */
+        color: inherit; /* Herda as cores padrão */
+        background-color: white;
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+        width: 300px;
+        height: 450px; /* Deixa a altura flexível inicialmente */
+        min-height: 400px; /* Altura mínima para uniformizar */
+        text-align: center;
+        transition: transform 0.2s;
+    }
+    
+    .card:hover {
+        transform: scale(1.05);
+    }
+    
+    .card img {
+        width: 100%;
+        height: 200px;
+        object-fit: cover;
+    }
+    
+    .card h3 {
+        font-size: 1.25rem;
+        margin: 10px 0;
+        color: #444; /* Cor neutra para títulos */
+    }
+    
+    .card p {
+        font-size: 1rem;
+        color: #777; /* Cor neutra para descrição */
+        padding: 0 10px;
+    }
+    
+    .card .price {
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: #666; /* Cor neutra para preço */
+        margin: 10px 0;
+    }
+    
+    .card button {
+        background-color: #228B22; /* Cor neutra para botão */
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        margin-bottom: 10px;
+        cursor: pointer;
+        border-radius: 5px;
+        font-size: 1rem;
+    }
+
+    .card button:hover {
+        background-color: #006400; /* Cor neutra para o hover do botão */
+    }
+    </style>
+    
+    <!-- Seção de Produtos -->
+    <div class="container">
+        <!-- Card 1 -->
+        <a href="#" class="card">
+            <img src="{% static 'images/monitor_escuro.jpg' %}" alt="Monitor Escuro">
+            <h3>Monitor Escuro</h3>
+            <p>Monitor LED Full HD 24 polegadas.</p>
+            <div class="price">199.99 €</div>
+            <button>Comprar Agora</button>
+        </a>
+        
+        <!-- Card 2 -->
+        <a href="#" class="card">
+            <img src="{% static 'images/monitor_escuro.jpg' %}" alt="Teclado Mecânico">
+            <h3>Teclado Mecânico</h3>
+            <p>Teclado RGB com switches mecânicos.</p>
+            <div class="price">129.99 €</div>
+            <button>Comprar Agora</button>
+        </a>
+        
+        <!-- Card 3 -->
+        <a href="#" class="card">
+            <img src="{% static 'images/monitor_escuro.jpg' %}" alt="Mouse Gamer">
+            <h3>Mouse Gamer</h3>
+            <p>Mouse ergonômico com 8 botões programáveis.</p>
+            <div class="price">89.99 €</div>
+            <button>Comprar Agora</button>
+        </a>
+    
+        <!-- Card 4 -->
+        <a href="#" class="card">
+            <img src="{% static 'images/monitor_escuro.jpg' %}" alt="Headset Gamer">
+            <h3>Headset Gamer</h3>
+            <p>Headset com som surround 7.1 e microfone removível.</p>
+            <div class="price">149.99 €</div>
+            <button>Comprar Agora</button>
+        </a>
+    </div>
+    
 {% endblock %}
