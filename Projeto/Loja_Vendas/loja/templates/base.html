@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -237,6 +238,7 @@
         }
     </style>
 </head>
+
 <body>
 
     <!-- Topbar -->
@@ -252,13 +254,13 @@
     <nav id="sideMenu">
         <div class="back-arrow" onclick="toggleMenu()">←</div>
         <div class="profile">
-            <h4>Eduardo Carvalho</h4>
-            <p>eduardo@gmail.com</p>
+            <h4>{{ nome }}</h4>
+            <p>{{ email }}</p>
         </div>
         <a href="{% url 'index' %}">Página Inicial</a>
         <a href="{% url 'perfil' %}">Perfil</a>
         <a href="#">Contacto</a>
-        <a href="#" class="logout">Logout</a>
+        <a href="{% url 'logout_view' %}" class="logout">Logout</a>
     </nav>
 
     <main>
@@ -279,4 +281,5 @@
         }
     </script>
 </body>
+
 </html>
