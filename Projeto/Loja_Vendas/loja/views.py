@@ -1,11 +1,11 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import logout
-from .models import Compra
+from .models import Compra, EncomendaView
 from django.contrib.auth.forms import UserChangeForm
 from .forms import UserSettingsForm
 from django.db import connection
-from django.http import Http404
+from django.http import Http404, JsonResponse
 from django.contrib import messages
 import bcrypt
 
@@ -37,6 +37,9 @@ def produto_detalhe(request, produto_id):
     
     # Renderizar o template e passar os dados
     return render(request, 'produto_detalhe.html', {'produto': produto})
+
+def detalhes_encomenda(request):
+    return render(request, 'index.html')
 
 
 
@@ -122,22 +125,12 @@ def user_profile(request):
 
 # @login_required
 def perfil(request):
-    if request.user.is_authenticated:
-        compras = Compra.objects.filter(utilizador=request.user).order_by('-data_compra')
-
-        if request.method == 'POST':
-            form = UserChangeForm(request.POST, instance=request.user)
-            if form.is_valid():
-                form.save()
-                return redirect('perfil')
-        else:
-            form = UserChangeForm(instance=request.user)
-    else:
-        # Se o utilizador não estiver autenticado, define variáveis vazias
-        compras = None
-        form = None
-    
-    return render(request, 'perfil.html', {'compras': compras, 'form': form})
+        # O utilizador está autenticado
+        utilizador_id = request.session.get('utilizador_id')
+        encomendas = obter_encomendas_utilizador(utilizador_id)
+        form = UserChangeForm()
+    # Passar os dados para o template
+        return render(request, 'perfil.html', {'form': form, 'encomendas': encomendas})
 
 
 def recuperar_senha(request):
@@ -150,3 +143,50 @@ def perfil_admin(request):
         'data_registro': '01/01/2023'
     }
     return render(request, 'perfil_admin.html', {'admin': admin_info})
+
+##Funções úteis
+
+from collections import defaultdict
+
+def obter_encomendas_utilizador(utilizador_id):
+    # Filtra as encomendas da view com base no utilizador_id
+    encomendas = EncomendaView.objects.filter(utilizador_id=utilizador_id)
+    
+    # Dicionário para armazenar as encomendas agrupadas
+    grouped_encomendas = defaultdict(lambda: {
+        "encomenda_id": None,
+        "morada": None,
+        "data_encomenda": None,
+        "estado": None,
+        "produto": [],
+        "preco_total": 0
+    })
+    
+    # Agrupar as encomendas e calcular o total
+    for encomenda in encomendas:
+        encomenda_id = encomenda.encomenda_id
+        item_data = {
+            "produto_id": encomenda.produto_id,
+            "nome": encomenda.nome_produto,
+            "descricao": encomenda.descricao,
+            "preco_unitario": encomenda.preco_unitario,
+            "quantidade": encomenda.quantidade,
+            "preco_total": encomenda.preco_total,
+        }
+        
+        # Adiciona o item à encomenda correspondente
+        grouped_encomendas[encomenda_id]["produto"].append(item_data)
+        grouped_encomendas[encomenda_id]["preco_total"] += encomenda.preco_total
+        
+        # A primeira vez que encontramos uma encomenda, salvamos os outros dados
+        if grouped_encomendas[encomenda_id]["encomenda_id"] is None:
+            grouped_encomendas[encomenda_id]["encomenda_id"] = encomenda.encomenda_id
+            grouped_encomendas[encomenda_id]["morada"] = encomenda.morada
+            grouped_encomendas[encomenda_id]["data_encomenda"] = encomenda.data_encomenda
+            grouped_encomendas[encomenda_id]["estado"] = encomenda.estado
+    
+    # Transformar o dicionário em uma lista para retorno
+    data = list(grouped_encomendas.values())
+    
+    return data
+

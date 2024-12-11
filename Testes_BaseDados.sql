@@ -1,24 +1,4 @@
 --Utilizador
---Inserir Utilizador
-CREATE OR REPLACE FUNCTION sp_Utilizador_CREATE(
-    p_nome VARCHAR,
-    p_email VARCHAR,
-    p_senha VARCHAR,
-    p_isAdmin BOOLEAN
-) RETURNS VOID AS $$
-BEGIN
-    -- Tentativa de inserção na tabela utilizador
-    BEGIN
-        INSERT INTO utilizador (nome, email, senha, isAdmin)
-        VALUES (p_nome, p_email, p_senha, p_isAdmin);
-    EXCEPTION
-        WHEN OTHERS THEN
-            -- Em caso de erro, capturar a exceção
-            RAISE EXCEPTION 'Erro na inserção do utilizador: %', SQLERRM;
-    END;
-END
-$$ LANGUAGE plpgsql;
-
 -- Função de teste para verificar se o utilizador foi inserido corretamente
 CREATE OR REPLACE FUNCTION TEST_Utilizador_CREATE(
     p_nome VARCHAR,
@@ -53,18 +33,6 @@ $$ LANGUAGE plpgsql;
 -- Exemplo de chamada para a função de teste
 SELECT TEST_Utilizador_CREATE('João Silva', 'joao.silva123@email.com', 'senha123', true);
 
---Ler Utilizador
-CREATE OR REPLACE FUNCTION sp_Utilizador_READ(
-    p_utilizador_id INT
-) RETURNS TABLE(utilizador_id INT, nome VARCHAR, email VARCHAR, isAdmin BOOLEAN) AS $$
-BEGIN
-    RETURN QUERY
-    SELECT u.utilizador_id, u.nome, u.email, u.isAdmin
-    FROM utilizador u
-    WHERE u.utilizador_id = p_utilizador_id;
-END
-$$ LANGUAGE plpgsql;
-
 CREATE OR REPLACE FUNCTION TEST_Utilizador_READ(
     p_utilizador_id INT
 ) RETURNS TEXT AS $$
@@ -85,26 +53,6 @@ $$ LANGUAGE plpgsql;
 
 -- Exemplo de chamada para a função de teste
 SELECT TEST_Utilizador_READ(1);
-
---Atualizar Utilizador
-CREATE OR REPLACE FUNCTION sp_Utilizador_UPDATE(
-    p_utilizador_id INT,
-    p_nome VARCHAR,
-    p_email VARCHAR,
-    p_senha VARCHAR,
-    p_isAdmin BOOLEAN
-) RETURNS VOID AS $$
-BEGIN
-    BEGIN
-        UPDATE utilizador
-        SET nome = p_nome, email = p_email, senha = p_senha, isAdmin = p_isAdmin
-        WHERE utilizador_id = p_utilizador_id;
-    EXCEPTION
-        WHEN OTHERS THEN
-            RAISE EXCEPTION 'Erro na atualização do utilizador: %', SQLERRM;
-    END;
-END
-$$ LANGUAGE plpgsql;
 
 CREATE OR REPLACE FUNCTION TEST_Utilizador_UPDATE(
     p_utilizador_id INT,
@@ -141,21 +89,6 @@ $$ LANGUAGE plpgsql;
 -- Exemplo de chamada para a função de teste
 SELECT TEST_Utilizador_UPDATE(1, 'João Silva', 'joao.silva@email.com', 'novaPasse123', true);
 
---Eliminar Utilizador
-CREATE OR REPLACE FUNCTION sp_Utilizador_DELETE(
-    p_utilizador_id INT
-) RETURNS VOID AS $$
-BEGIN
-    BEGIN
-        DELETE FROM utilizador
-        WHERE utilizador_id = p_utilizador_id;
-    EXCEPTION
-        WHEN OTHERS THEN
-            RAISE EXCEPTION 'Erro na exclusão do utilizador: %', SQLERRM;
-    END;
-END
-$$ LANGUAGE plpgsql;
-
 CREATE OR REPLACE FUNCTION TEST_Utilizador_DELETE(
     p_utilizador_id INT
 ) RETURNS TEXT AS $$
@@ -185,24 +118,6 @@ $$ LANGUAGE plpgsql;
 SELECT TEST_Utilizador_DELETE(1);
 
 --Categoria
---Inserir Categoria
-CREATE OR REPLACE FUNCTION sp_Categoria_CREATE(
-    p_nome VARCHAR
-) RETURNS VOID AS $$
-BEGIN
-    -- Tentativa de inserção na tabela categoria
-    BEGIN
-        INSERT INTO categoria (nome)
-        VALUES (p_nome);
-
-    EXCEPTION
-        WHEN OTHERS THEN
-            -- Em caso de erro, capturar a exceção
-            RAISE EXCEPTION 'Erro na inserção da categoria: %', SQLERRM;
-    END;
-END
-$$ LANGUAGE plpgsql;
-
 -- Função de teste para verificar se a categoria foi inserida corretamente
 CREATE OR REPLACE FUNCTION TEST_Categoria_CREATE(
     p_nome VARCHAR
@@ -234,18 +149,6 @@ $$ LANGUAGE plpgsql;
 -- Exemplo de chamada para a função de teste
 SELECT TEST_Categoria_CREATE('Informática');
 
---Ler Categoria
-CREATE OR REPLACE FUNCTION sp_Categoria_READ(
-    p_categoria_id INT
-) RETURNS TABLE(categoria_id INT, nome VARCHAR) AS $$
-BEGIN
-    RETURN QUERY
-    SELECT c.categoria_id, c.nome
-    FROM categoria c
-    WHERE c.categoria_id = p_categoria_id;
-END
-$$ LANGUAGE plpgsql;
-
 -- Função de teste para verificar se a leitura da categoria foi bem-sucedida
 CREATE OR REPLACE FUNCTION TEST_Categoria_READ(
     p_categoria_id INT
@@ -270,26 +173,6 @@ $$ LANGUAGE plpgsql;
 
 -- Exemplo de chamada para a função de teste
 SELECT TEST_Categoria_READ(1);
-
---Update Categoria
-CREATE OR REPLACE FUNCTION sp_Categoria_UPDATE(
-    p_categoria_id INT,
-    p_nome VARCHAR
-) RETURNS VOID AS $$
-BEGIN
-    -- Tentativa de atualização na tabela categoria
-    BEGIN
-        UPDATE categoria
-        SET nome = p_nome
-        WHERE categoria_id = p_categoria_id;
-
-    EXCEPTION
-        WHEN OTHERS THEN
-            -- Em caso de erro, capturar a exceção
-            RAISE EXCEPTION 'Erro na atualização da categoria: %', SQLERRM;
-    END;
-END
-$$ LANGUAGE plpgsql;
 
 -- Função de teste para verificar se a categoria foi atualizada corretamente
 CREATE OR REPLACE FUNCTION TEST_Categoria_UPDATE(
@@ -324,24 +207,6 @@ $$ LANGUAGE plpgsql;
 -- Exemplo de chamada para a função de teste
 SELECT TEST_Categoria_UPDATE(1, 'Tecnologia');
 
---Eliminar Categoria
-CREATE OR REPLACE FUNCTION sp_Categoria_DELETE(
-    p_categoria_id INT
-) RETURNS VOID AS $$
-BEGIN
-    -- Tentativa de exclusão na tabela categoria
-    BEGIN
-        DELETE FROM categoria
-        WHERE categoria_id = p_categoria_id;
-
-    EXCEPTION
-        WHEN OTHERS THEN
-            -- Em caso de erro, capturar a exceção
-            RAISE EXCEPTION 'Erro na exclusão da categoria: %', SQLERRM;
-    END;
-END
-$$ LANGUAGE plpgsql;
-
 -- Função de teste para verificar se a categoria foi excluída corretamente
 CREATE OR REPLACE FUNCTION TEST_Categoria_DELETE(
     p_categoria_id INT
@@ -374,30 +239,7 @@ $$ LANGUAGE plpgsql;
 -- Atenção as chaves estrangeiras!
 SELECT TEST_Categoria_DELETE(1);
 
-
 --Produto
---Inserir Produto
-CREATE OR REPLACE FUNCTION sp_Produto_CREATE(
-    p_nome VARCHAR,
-    p_descricao TEXT,
-    p_preco DECIMAL,
-    p_categoria_id INT,
-    p_quantidade_em_stock INT
-) RETURNS VOID AS $$
-BEGIN
-    -- Tentativa de inserção na tabela produto
-    BEGIN
-        INSERT INTO produto (nome, descricao, preco, categoria_id, quantidade_em_stock)
-        VALUES (p_nome, p_descricao, p_preco, p_categoria_id, p_quantidade_em_stock);
-
-    EXCEPTION
-        WHEN OTHERS THEN
-            -- Em caso de erro, capturamos a exceção e lançamos um erro genérico
-            RAISE EXCEPTION 'Erro na inserção do produto: %', SQLERRM;
-    END;
-END
-$$ LANGUAGE plpgsql;
-
 -- Função de teste para verificar se o produto foi inserido corretamente
 CREATE OR REPLACE FUNCTION TEST_Produto_CREATE(
     p_nome VARCHAR,
@@ -438,18 +280,6 @@ $$ LANGUAGE plpgsql;
 -- Exemplo de chamada para a função de teste
 SELECT TEST_Produto_CREATE('Xiaomi XPTO', 'Xiaomi XPTO 512GB', 999.99, 1, 50);
 
---Selecionar Produto
-CREATE OR REPLACE FUNCTION sp_Produto_READ(
-    p_produto_id INT
-) RETURNS TABLE(produto_id INT, nome VARCHAR, descricao TEXT, preco DECIMAL, categoria_id INT, quantidade_em_stock INT) AS $$
-BEGIN
-    RETURN QUERY
-    SELECT p.produto_id, p.nome, p.descricao, p.preco, p.categoria_id, p.quantidade_em_stock
-    FROM produto p
-    WHERE p.produto_id = p_produto_id;
-END
-$$ LANGUAGE plpgsql;
-
 CREATE OR REPLACE FUNCTION TEST_Produto_READ(
     p_produto_id INT
 ) RETURNS TEXT AS $$
@@ -470,27 +300,6 @@ $$ LANGUAGE plpgsql;
 
 -- Exemplo de chamada para a função de teste
 SELECT TEST_Produto_READ(1);
-
---Atualizar Produto
-CREATE OR REPLACE FUNCTION sp_Produto_UPDATE(
-    p_produto_id INT,
-    p_nome VARCHAR,
-    p_descricao TEXT,
-    p_preco DECIMAL,
-    p_categoria_id INT,
-    p_quantidade_em_stock INT
-) RETURNS VOID AS $$
-BEGIN
-    BEGIN
-        UPDATE produto
-        SET nome = p_nome, descricao = p_descricao, preco = p_preco, categoria_id = p_categoria_id, quantidade_em_stock = p_quantidade_em_stock
-        WHERE produto_id = p_produto_id;
-    EXCEPTION
-        WHEN OTHERS THEN
-            RAISE EXCEPTION 'Erro na atualização do produto: %', SQLERRM;
-    END;
-END
-$$ LANGUAGE plpgsql;
 
 CREATE OR REPLACE FUNCTION TEST_Produto_UPDATE(
     p_produto_id INT,
@@ -529,21 +338,6 @@ $$ LANGUAGE plpgsql;
 -- Exemplo de chamada para a função de teste
 SELECT TEST_Produto_UPDATE(1, 'Xiaomi XPTO 2', 'Xiaomi XPTO 2 512GB', 1099.99, 1, 30);
 
---Eliminar Produto
-CREATE OR REPLACE FUNCTION sp_Produto_DELETE(
-    p_produto_id INT
-) RETURNS VOID AS $$
-BEGIN
-    BEGIN
-        DELETE FROM produto
-        WHERE produto_id = p_produto_id;
-    EXCEPTION
-        WHEN OTHERS THEN
-            RAISE EXCEPTION 'Erro na exclusão do produto: %', SQLERRM;
-    END;
-END
-$$ LANGUAGE plpgsql;
-
 CREATE OR REPLACE FUNCTION TEST_Produto_DELETE(
     p_produto_id INT
 ) RETURNS TEXT AS $$
@@ -573,26 +367,6 @@ $$ LANGUAGE plpgsql;
 SELECT TEST_Produto_DELETE(1);
 
 --Encomenda
---Inserir Encomenda
-CREATE OR REPLACE FUNCTION sp_Encomenda_CREATE(
-    p_utilizador_id INT,
-    p_morada VARCHAR,
-    p_estado VARCHAR
-) RETURNS VOID AS $$
-BEGIN
-    -- Tentativa de inserção na tabela encomenda
-    BEGIN
-        INSERT INTO encomenda (utilizador_id, morada, estado)
-        VALUES (p_utilizador_id, p_morada, p_estado);
-
-    EXCEPTION
-        WHEN OTHERS THEN
-            -- Em caso de erro, capturamos a exceção e lançamos um erro genérico
-            RAISE EXCEPTION 'Erro na inserção da encomenda: %', SQLERRM;
-    END;
-END
-$$ LANGUAGE plpgsql;
-
 -- Função de teste para verificar se a encomenda foi inserida corretamente
 CREATE OR REPLACE FUNCTION TEST_Encomenda_CREATE(
     p_utilizador_id INT,
@@ -629,18 +403,6 @@ $$ LANGUAGE plpgsql;
 -- Exemplo de chamada para a função de teste
 SELECT TEST_Encomenda_CREATE(1, 'Rua das Flores, 123', 'pendente');
 
---Ler encomenda
-CREATE OR REPLACE FUNCTION sp_Encomenda_READ(
-    p_encomenda_id INT
-) RETURNS TABLE(encomenda_id INT, utilizador_id INT, morada VARCHAR, data_encomenda TIMESTAMP, estado VARCHAR) AS $$
-BEGIN
-    RETURN QUERY
-    SELECT e.encomenda_id, e.utilizador_id, e.morada, e.data_encomenda, e.estado
-    FROM encomenda e
-    WHERE e.encomenda_id = p_encomenda_id;
-END
-$$ LANGUAGE plpgsql;
-
 CREATE OR REPLACE FUNCTION TEST_Encomenda_READ(
     p_encomenda_id INT
 ) RETURNS TEXT AS $$
@@ -661,25 +423,6 @@ $$ LANGUAGE plpgsql;
 
 -- Exemplo de chamada para a função de teste
 SELECT TEST_Encomenda_READ(3);
-
---Atualizar encomenda
-CREATE OR REPLACE FUNCTION sp_Encomenda_UPDATE(
-    p_encomenda_id INT,
-    p_utilizador_id INT,
-    p_morada VARCHAR,
-    p_estado VARCHAR
-) RETURNS VOID AS $$
-BEGIN
-    BEGIN
-        UPDATE encomenda
-        SET utilizador_id = p_utilizador_id, morada = p_morada, estado = p_estado
-        WHERE encomenda_id = p_encomenda_id;
-    EXCEPTION
-        WHEN OTHERS THEN
-            RAISE EXCEPTION 'Erro na atualização da encomenda: %', SQLERRM;
-    END;
-END
-$$ LANGUAGE plpgsql;
 
 CREATE OR REPLACE FUNCTION TEST_Encomenda_UPDATE(
     p_encomenda_id INT,
@@ -1692,3 +1435,55 @@ $$ LANGUAGE plpgsql;
 
 -- Exemplo de chamada para a função de teste
 SELECT TEST_FaturaFornecedor_DELETE(1);
+
+
+--Extra
+
+--Verificar Email Existe
+CREATE OR REPLACE FUNCTION VerificarLogin(
+    p_email VARCHAR(255)
+) RETURNS TABLE (
+    utilizador_id INT,
+    nome VARCHAR,
+    email VARCHAR,
+    senha VARCHAR,
+    isAdmin BOOLEAN
+) AS $$
+BEGIN
+    -- Busca todos os dados do utilizador com o email fornecido
+    RETURN QUERY
+    SELECT u.utilizador_id, u.nome, u.email, u.senha, u.isAdmin
+    FROM utilizador u
+    WHERE u.email = p_email;
+END;
+$$ LANGUAGE plpgsql;
+
+--View Encomendas de um user
+
+CREATE VIEW vw_encomendas_utilizador AS
+SELECT 
+    e.encomenda_id,
+    e.utilizador_id,
+    e.morada,
+    e.data_encomenda,
+    e.estado,
+    p.produto_id,
+    p.nome AS nome_produto,
+    p.descricao,
+    p.preco AS preco_unitario,
+    i.quantidade,
+    i.preco_total
+FROM 
+    encomenda e
+JOIN 
+    itens_encomenda i ON e.encomenda_id = i.encomenda_id
+JOIN 
+    produto p ON i.produto_id = p.produto_id;
+	
+SELECT * 
+FROM vw_encomendas_utilizador
+WHERE utilizador_id = 4;
+
+
+
+

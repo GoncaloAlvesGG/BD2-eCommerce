@@ -9,9 +9,11 @@ urlpatterns = [
     path('registo/', views.registo, name='registo'),
     path('index/', views.index, name='index'),  # Página inicial
     path('produto/<int:produto_id>/', views.produto_detalhe, name='produto_detalhe'),  # Detalhe do produto
+    path('encomenda/<int:encomenda_id>/', views.detalhes_encomenda, name='detalhes_encomenda'), # TODO: Apenas pode aceder o ADMIN e o próprio user
     path('carrinho/', views.carrinho, name='carrinho'),  # Carrinho de compras
     path('checkout/', views.checkout, name='checkout'),  # Finalização da compra
     path('perfil/', views.perfil, name='perfil'), # Perfil do usuário
     path('recuperar_senha/', views.recuperar_senha, name='recuperar_senha'),  # Recuperar senha
     path('admin/perfil/', views.perfil_admin, name='perfil_admin'), # Perfil do admin
+
 ]
