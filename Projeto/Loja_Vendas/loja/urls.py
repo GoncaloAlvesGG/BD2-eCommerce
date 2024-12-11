@@ -16,9 +16,10 @@ urlpatterns = [
     path('recuperar_senha/', views.recuperar_senha, name='recuperar_senha'),  # Recuperar senha
     path('admin/perfil/', views.perfil_admin, name='perfil_admin'), # Perfil do admin
     path('dashboard/', views.admin_dashboard, name='admin_dashboard'),
-    path('dashboard_encomendas/', views.dashboard_encomendas, name='dashboard_encomendas'),
-    path('dashboard_produtos/', views.dashboard_produtos, name='dashboard_produtos'),
-    path('dashboard_clientes/', views.dashboard_clientes, name='dashboard_clientes'),
-    path('dashboard_configuracoes/', views.dashboard_configuracoes, name='dashboard_configuracoes'),
+    path('dashboard/encomendas/', views.dashboard_encomendas, name='dashboard_encomendas'),
+    path('dashboard/produtos/', views.dashboard_produtos, name='dashboard_produtos'),
+    path('dashboard/clientes/', views.dashboard_clientes, name='dashboard_clientes'),
+    path('dashboard/configuracoes/', views.dashboard_configuracoes, name='dashboard_configuracoes'),
+    path('dashboard/fornecedores/', views.dashboard_fornecedores, name='dashboard_fornecedores'),
 
 ]

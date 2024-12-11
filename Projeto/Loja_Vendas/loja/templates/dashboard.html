@@ -24,12 +24,15 @@
 
     .container {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        grid-template-columns: repeat(4, 1fr);
+        /* Força 4 colunas */
         gap: 20px;
         padding: 20px;
         max-width: 1200px;
         margin: 0 auto;
     }
+
+
 
     .card {
         background-color: white;
@@ -114,9 +117,9 @@
             <img src="{% static 'images/produtos.png' %}" alt="Produtos">
             <div class="card-content">
                 <h3>Produtos</h3>
-                <p>Adicione, edite ou remova produtos</p>
+                <p>Adicionar, editar ou remover produtos</p>
                 <a href="{% url 'dashboard_produtos' %}">
-                    <button>Gerenciar Produtos</button>
+                    <button>Gerir Produtos</button>
                 </a>
             </div>
         </div>
@@ -124,9 +127,20 @@
             <img src="{% static 'images/clientes.png' %}" alt="Clientes">
             <div class="card-content">
                 <h3>Clientes</h3>
-                <p>Acessar às informações dos clientes</p>
+                <p>Aceder às informações dos clientes</p>
                 <a href="{% url 'dashboard_clientes' %}">
                     <button>Ver Clientes</button>
+                </a>
+            </div>
+        </div>
+
+        <div class="card">
+            <img src="{% static 'images/fornecedor.png' %}" alt="Clientes">
+            <div class="card-content">
+                <h3>Fornecedores</h3>
+                <p>Consultar todas informações dos fornecedores</p>
+                <a href="{% url 'dashboard_fornecedores' %}">
+                    <button>Ver Fornecedores</button>
                 </a>
             </div>
         </div>

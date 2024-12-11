@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import logout
-from .models import Compra, EncomendaView
+from .models import *
 from django.contrib.auth.forms import UserChangeForm
 from .forms import UserSettingsForm
 from django.db import connection
@@ -145,13 +145,19 @@ def dashboard_encomendas(request):
     return render(request, 'dashboard_encomendas.html', {'encomendas': encomendas})
 
 def dashboard_produtos(request):
-    return render(request, 'dashboard_produtos.html')
+    produtos = ProdutoView.objects.all()
+    return render(request, 'dashboard_produtos.html', {'produtos': produtos})
 
 def dashboard_configuracoes(request):
     return render(request, 'dashboard_configuracoes.html')
 
 def dashboard_clientes(request):
-    return render(request, 'dashboard_clientes.html')
+    utilizadores = UtilizadorView.objects.all()
+    return render(request, 'dashboard_clientes.html', {'utilizadores': utilizadores})
+
+def dashboard_fornecedores(request):
+    fornecedores = FornecedorView.objects.all()
+    return render(request, 'dashboard_fornecedores.html', {'fornecedores': fornecedores})
 
 def recuperar_senha(request):
     return render(request, 'recuperar_pass.html')

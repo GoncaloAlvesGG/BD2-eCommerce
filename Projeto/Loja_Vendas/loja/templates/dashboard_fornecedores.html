@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+
+{% load static %}
+
+{% block title %}Fornecedores - Minha Loja{% endblock %}
+
+{% block content %}
+
+<style>
+    .products-container {
+        margin-top: 20px;
+        padding: 20px;
+        background-color: #fff;
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+
+    .products-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .products-table th,
+    .products-table td {
+        text-align: left;
+        padding: 10px;
+        border-bottom: 1px solid #ddd;
+    }
+
+    .products-table th {
+        background-color: #f8f9fa;
+    }
+
+    .products-table tr:hover {
+        background-color: #f1f1f1;
+    }
+
+    .btn {
+        background-color: #007bff;
+        color: white;
+        padding: 8px 12px;
+        border-radius: 5px;
+        text-decoration: none;
+    }
+
+    .btn:hover {
+        background-color: #0056b3;
+    }
+</style>
+
+<div class="products-container">
+    <div class="header">
+        <h2>Todos os Fornecedores</h2>
+    </div>
+    <table class="products-table">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Nome</th>
+                <th>Contato</th>
+                <th>Endereço</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for fornecedor in fornecedores %}
+            <tr>
+                <td>{{ fornecedor.fornecedor_id }}</td>
+                <td>{{ fornecedor.nome }}</td>
+                <td>{{ fornecedor.contato|default:"Sem contato" }}</td>
+                <td>{{ fornecedor.endereco|default:"Sem endereço" }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="4">Nenhum fornecedor encontrado.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

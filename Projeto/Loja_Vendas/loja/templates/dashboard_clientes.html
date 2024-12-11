@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+
+{% load static %}
+
+{% block title %}Utilizadores - Minha Loja{% endblock %}
+
+{% block content %}
+
+<style>
+    .products-container {
+        margin-top: 20px;
+        padding: 20px;
+        background-color: #fff;
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+
+    .products-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .products-table th,
+    .products-table td {
+        text-align: left;
+        padding: 10px;
+        border-bottom: 1px solid #ddd;
+    }
+
+    .products-table th {
+        background-color: #f8f9fa;
+    }
+
+    .products-table tr:hover {
+        background-color: #f1f1f1;
+    }
+
+    .btn {
+        background-color: #007bff;
+        color: white;
+        padding: 8px 12px;
+        border-radius: 5px;
+        text-decoration: none;
+    }
+
+    .btn:hover {
+        background-color: #0056b3;
+    }
+</style>
+
+<div class="products-container">
+    <div class="header">
+        <h2>Todos os Utilizadores</h2>
+    </div>
+    <table class="products-table">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Nome</th>
+                <th>Email</th>
+                <th>Admin</th>
+                <th>Data de Registo</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for utilizador in utilizadores %}
+            <tr>
+                <td>{{ utilizador.utilizador_id }}</td>
+                <td>{{ utilizador.nome }}</td>
+                <td>{{ utilizador.email }}</td>
+                <td>{{ utilizador.isadmin|yesno:"Sim,Não" }}</td>
+                <td>{{ utilizador.data_registo|date:"d/m/Y" }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="5">Nenhum utilizador encontrado.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
