@@ -107,7 +107,7 @@ def logout_view(request):
     return render(request, "login.html")
 
 def index(request):
-    # Página inicial com a lista de produtos
+    produtos = produtos_4recentes()
     return render(request, 'index.html', {'produtos': produtos})
 
 def carrinho(request):
@@ -144,6 +144,14 @@ def dashboard_encomendas(request):
     encomendas = obter_encomendas()
     return render(request, 'dashboard_encomendas.html', {'encomendas': encomendas})
 
+def dashboard_produtos(request):
+    return render(request, 'dashboard_produtos.html')
+
+def dashboard_configuracoes(request):
+    return render(request, 'dashboard_configuracoes.html')
+
+def dashboard_clientes(request):
+    return render(request, 'dashboard_clientes.html')
 
 def recuperar_senha(request):
     return render(request, 'recuperar_pass.html')
@@ -155,6 +163,13 @@ def perfil_admin(request):
         'data_registro': '01/01/2023'
     }
     return render(request, 'perfil_admin.html', {'admin': admin_info})
+
+def produtos_4recentes():
+    with connection.cursor() as cursor:
+        cursor.execute("SELECT * FROM ultimos_produtos_adicionados()")
+        colunas = [col[0] for col in cursor.description]
+        resultados = [dict(zip(colunas, row)) for row in cursor.fetchall()]
+    return resultados
 
 ##Funções úteis
 
@@ -286,3 +301,4 @@ def obter_encomenda(encomenda_id):
     data = list(grouped_encomendas.values())
     
     return data
+

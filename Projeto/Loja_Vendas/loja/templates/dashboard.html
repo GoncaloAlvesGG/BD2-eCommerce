@@ -2,107 +2,134 @@
 
 {% load static %}
 
-{% block title %}Produtos - Minha Loja{% endblock %}
+{% block title %}Dashboard Admin - Minha Loja{% endblock %}
 
 {% block content %}
 <style>
-    /* Estilo dos cards */
+    body {
+        margin: 0;
+        font-family: Arial, sans-serif;
+        background-color: #f5f5f5;
+    }
+
+    .main-content {
+        text-align: center;
+        padding: 20px;
+    }
+
+    h1 {
+        color: #333;
+        margin-bottom: 20px;
+    }
+
     .container {
-        display: flex;
-        justify-content: center;
-        align-items: stretch;
-        /* Alinha os cards para terem a mesma altura */
-        min-height: 100vh;
-        /* Centraliza os cards verticalmente */
-        flex-wrap: wrap;
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
         gap: 20px;
         padding: 20px;
-        width: 100vw;
-        /* Largura total da página */
-        position: relative;
-        /* Garante que o conteúdo fique acima do menu quando ele estiver oculto */
-        z-index: 10;
-        /* Cards ficam acima do menu */
-        box-sizing: border-box;
+        max-width: 1200px;
+        margin: 0 auto;
     }
 
     .card {
-        display: flex;
-        flex-direction: column;
-        /* Permite que o conteúdo cresça verticalmente */
-        justify-content: space-between;
-        /* Distribui o conteúdo uniformemente */
-        text-decoration: none;
-        /* Remove o sublinhado do link */
-        color: inherit;
-        /* Herda as cores padrão */
         background-color: white;
         border-radius: 10px;
         box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         overflow: hidden;
-        width: 300px;
-        height: 450px;
-        /* Deixa a altura flexível inicialmente */
-        min-height: 400px;
-        /* Altura mínima para uniformizar */
-        text-align: center;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        align-items: center;
         transition: transform 0.2s;
     }
 
     .card:hover {
-        transform: scale(1.05);
+        transform: translateY(-5px);
     }
 
     .card img {
-        width: 100%;
-        height: 200px;
+        width: 70%;
+        height: 220px;
         object-fit: cover;
+    }
+
+    .card-content {
+        padding: 15px;
+        text-align: center;
     }
 
     .card h3 {
         font-size: 1.25rem;
         margin: 10px 0;
         color: #444;
-        /* Cor neutra para títulos */
     }
 
     .card p {
         font-size: 1rem;
         color: #777;
-        /* Cor neutra para descrição */
-        padding: 0 10px;
+        margin-bottom: 20px;
     }
 
     .card .price {
         font-size: 1.5rem;
         font-weight: bold;
         color: #666;
-        /* Cor neutra para preço */
         margin: 10px 0;
     }
 
     .card button {
         background-color: #228B22;
-        /* Cor neutra para botão */
         color: white;
         border: none;
         padding: 10px 20px;
-        margin-bottom: 10px;
         cursor: pointer;
         border-radius: 5px;
         font-size: 1rem;
+        transition: background-color 0.3s;
     }
 
     .card button:hover {
         background-color: #006400;
-        /* Cor neutra para o hover do botão */
+    }
+
+    a {
+        text-decoration: none;
     }
 </style>
 
-<!-- Seção de Produtos -->
-<div class="container">
-    <a href="{% url 'dashboard_encomendas' %}" class="btn btn-info">Ver
-        Ver todas encomendas</a>
+<div class="main-content">
+    <h1>Bem-vindo ao Dashboard Admin</h1>
+    <div class="container">
+        <div class="card">
+            <img src="{% static 'images/encomendas.png' %}" alt="Encomendas">
+            <div class="card-content">
+                <h3>Encomendas</h3>
+                <p>Consultar todas as encomendas da loja</p>
+                <a href="{% url 'dashboard_encomendas' %}">
+                    <button>Ver Encomendas</button>
+                </a>
+            </div>
+        </div>
+        <div class="card">
+            <img src="{% static 'images/produtos.png' %}" alt="Produtos">
+            <div class="card-content">
+                <h3>Produtos</h3>
+                <p>Adicione, edite ou remova produtos</p>
+                <a href="{% url 'dashboard_produtos' %}">
+                    <button>Gerenciar Produtos</button>
+                </a>
+            </div>
+        </div>
+        <div class="card">
+            <img src="{% static 'images/clientes.png' %}" alt="Clientes">
+            <div class="card-content">
+                <h3>Clientes</h3>
+                <p>Acessar às informações dos clientes</p>
+                <a href="{% url 'dashboard_clientes' %}">
+                    <button>Ver Clientes</button>
+                </a>
+            </div>
+        </div>
+    </div>
 </div>
-
 {% endblock %}
