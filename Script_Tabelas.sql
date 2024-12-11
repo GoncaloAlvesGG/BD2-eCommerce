@@ -7,10 +7,10 @@ CREATE TABLE utilizador (
     data_registo TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE categoria (
-    categoria_id SERIAL PRIMARY KEY,
-    nome VARCHAR(50) UNIQUE NOT NULL
-);
+		CREATE TABLE categoria (
+			categoria_id SERIAL PRIMARY KEY,
+			nome VARCHAR(50) UNIQUE NOT NULL
+		);
 
 CREATE TABLE produto (
     produto_id SERIAL PRIMARY KEY,

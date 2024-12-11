@@ -7,7 +7,9 @@ from .forms import UserSettingsForm
 from django.db import connection
 from django.http import Http404, JsonResponse
 from django.contrib import messages
+from collections import defaultdict
 import bcrypt
+
 
 #dados ficticios
 produtos = [
@@ -38,8 +40,14 @@ def produto_detalhe(request, produto_id):
     # Renderizar o template e passar os dados
     return render(request, 'produto_detalhe.html', {'produto': produto})
 
-def detalhes_encomenda(request):
-    return render(request, 'index.html')
+def encomenda(request, encomenda_id):
+    encomenda_list = obter_encomenda(encomenda_id)  # Assuming this returns a list
+    encomenda = encomenda_list[0] if encomenda_list else None  # Extract the first item
+    return render(request, 'detalhe_encomenda.html', {'encomenda': encomenda})
+
+
+def admin_dashboard(request):
+    return render(request, 'dashboard.html')
 
 
 
@@ -132,6 +140,10 @@ def perfil(request):
     # Passar os dados para o template
         return render(request, 'perfil.html', {'form': form, 'encomendas': encomendas})
 
+def dashboard_encomendas(request):
+    encomendas = obter_encomendas()
+    return render(request, 'dashboard_encomendas.html', {'encomendas': encomendas})
+
 
 def recuperar_senha(request):
     return render(request, 'recuperar_pass.html')
@@ -146,7 +158,49 @@ def perfil_admin(request):
 
 ##Funções úteis
 
-from collections import defaultdict
+def obter_encomendas():
+    encomendas = EncomendaView.objects.all()
+    
+    # Dicionário para armazenar as encomendas agrupadas
+    grouped_encomendas = defaultdict(lambda: {
+        "encomenda_id": None,
+        "morada": None,
+        "data_encomenda": None,
+        "estado": None,
+        "produto": [],
+        "preco_total": 0,
+        "nome_user": None
+    })
+    
+    # Agrupar as encomendas e calcular o total
+    for encomenda in encomendas:
+        encomenda_id = encomenda.encomenda_id
+        encomenda.nome_user = encomenda.nome_user
+        item_data = {
+            "produto_id": encomenda.produto_id,
+            "nome": encomenda.nome_produto,
+            "descricao": encomenda.descricao,
+            "preco_unitario": encomenda.preco_unitario,
+            "quantidade": encomenda.quantidade,
+            "preco_total": encomenda.preco_total,
+        }
+        
+        # Adiciona o item à encomenda correspondente
+        grouped_encomendas[encomenda_id]["produto"].append(item_data)
+        grouped_encomendas[encomenda_id]["preco_total"] += encomenda.preco_total
+        
+        # A primeira vez que encontramos uma encomenda, salvamos os outros dados
+        if grouped_encomendas[encomenda_id]["encomenda_id"] is None:
+            grouped_encomendas[encomenda_id]["encomenda_id"] = encomenda.encomenda_id
+            grouped_encomendas[encomenda_id]["nome_user"] = encomenda.nome_user
+            grouped_encomendas[encomenda_id]["morada"] = encomenda.morada
+            grouped_encomendas[encomenda_id]["data_encomenda"] = encomenda.data_encomenda
+            grouped_encomendas[encomenda_id]["estado"] = encomenda.estado
+    
+    # Transformar o dicionário em uma lista para retorno
+    data = list(grouped_encomendas.values())
+    
+    return data
 
 def obter_encomendas_utilizador(utilizador_id):
     # Filtra as encomendas da view com base no utilizador_id
@@ -159,7 +213,7 @@ def obter_encomendas_utilizador(utilizador_id):
         "data_encomenda": None,
         "estado": None,
         "produto": [],
-        "preco_total": 0
+        "preco_total": 0,
     })
     
     # Agrupar as encomendas e calcular o total
@@ -190,3 +244,45 @@ def obter_encomendas_utilizador(utilizador_id):
     
     return data
 
+def obter_encomenda(encomenda_id):
+    encomendas = EncomendaView.objects.filter(encomenda_id=encomenda_id)
+    
+    # Dicionário para armazenar as encomendas agrupadas
+    grouped_encomendas = defaultdict(lambda: {
+        "encomenda_id": None,
+        "morada": None,
+        "data_encomenda": None,
+        "estado": None,
+        "produto": [],
+        "preco_total": 0,
+        "nome_user": None
+    })
+    
+    # Agrupar as encomendas e calcular o total
+    for encomenda in encomendas:
+        encomenda_id = encomenda.encomenda_id
+        item_data = {
+            "produto_id": encomenda.produto_id,
+            "nome": encomenda.nome_produto,
+            "descricao": encomenda.descricao,
+            "preco_unitario": encomenda.preco_unitario,
+            "quantidade": encomenda.quantidade,
+            "preco_total": encomenda.preco_total,
+        }
+        
+        # Adiciona o item à encomenda correspondente
+        grouped_encomendas[encomenda_id]["produto"].append(item_data)
+        grouped_encomendas[encomenda_id]["preco_total"] += encomenda.preco_total
+        
+        # A primeira vez que encontramos uma encomenda, salvamos os outros dados
+        if grouped_encomendas[encomenda_id]["encomenda_id"] is None:
+            grouped_encomendas[encomenda_id]["encomenda_id"] = encomenda.encomenda_id
+            grouped_encomendas[encomenda_id]["nome_user"] = encomenda.nome_user
+            grouped_encomendas[encomenda_id]["morada"] = encomenda.morada
+            grouped_encomendas[encomenda_id]["data_encomenda"] = encomenda.data_encomenda
+            grouped_encomendas[encomenda_id]["estado"] = encomenda.estado
+    
+    # Transformar o dicionário em uma lista para retorno
+    data = list(grouped_encomendas.values())
+    
+    return data

@@ -4,6 +4,7 @@ from django.contrib.auth.models import User
 class EncomendaView(models.Model):
     encomenda_id = models.IntegerField(primary_key=True)
     utilizador_id = models.IntegerField()
+    nome_user = models.CharField(max_length=100)
     morada = models.CharField(max_length=100)
     data_encomenda = models.DateTimeField()
     estado = models.CharField(max_length=20)

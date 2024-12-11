@@ -1,3 +1,4 @@
+--CRUD
 --Utilizador
 --Inserir Utilizador
 CREATE OR REPLACE FUNCTION sp_Utilizador_CREATE(
@@ -257,3 +258,519 @@ BEGIN
     END;
 END
 $$ LANGUAGE plpgsql;
+
+--Eliminar Encomenda
+CREATE OR REPLACE FUNCTION sp_Encomenda_DELETE(
+    p_encomenda_id INT
+) RETURNS VOID AS $$
+BEGIN
+    BEGIN
+        DELETE FROM encomenda
+        WHERE encomenda_id = p_encomenda_id;
+    EXCEPTION
+        WHEN OTHERS THEN
+            RAISE EXCEPTION 'Erro na exclusão da encomenda: %', SQLERRM;
+    END;
+END
+$$ LANGUAGE plpgsql;
+
+--Fatura
+--Inserir Fatura
+CREATE OR REPLACE FUNCTION sp_Fatura_CREATE(
+    p_encomenda_id INT,
+    p_valor_total DECIMAL
+) RETURNS VOID AS $$
+BEGIN
+    -- Tentativa de inserção na tabela fatura
+    BEGIN
+        INSERT INTO fatura (encomenda_id, valor_total)
+        VALUES (p_encomenda_id, p_valor_total);
+
+    EXCEPTION
+        WHEN OTHERS THEN
+            -- Em caso de erro, capturamos a exceção e lançamos um erro genérico
+            RAISE EXCEPTION 'Erro na inserção da fatura: %', SQLERRM;
+    END;
+END
+$$ LANGUAGE plpgsql;
+
+--Selecionar Fatura
+CREATE OR REPLACE FUNCTION sp_Fatura_READ(
+    p_fatura_id INT
+) RETURNS TABLE(fatura_id INT, encomenda_id INT, data_emissao TIMESTAMP, valor_total DECIMAL) AS $$
+BEGIN
+    RETURN QUERY
+    SELECT f.fatura_id, f.encomenda_id, f.data_emissao, f.valor_total
+    FROM fatura f
+    WHERE f.fatura_id = p_fatura_id;
+END
+$$ LANGUAGE plpgsql;
+
+--Atualizar Fatura
+CREATE OR REPLACE FUNCTION sp_Fatura_UPDATE(
+    p_fatura_id INT,
+    p_valor_total DECIMAL
+) RETURNS VOID AS $$
+BEGIN
+    BEGIN
+        UPDATE fatura
+        SET valor_total = p_valor_total
+        WHERE fatura_id = p_fatura_id;
+    EXCEPTION
+        WHEN OTHERS THEN
+            RAISE EXCEPTION 'Erro na atualização da fatura: %', SQLERRM;
+    END;
+END
+$$ LANGUAGE plpgsql;
+
+--Eliminar Fatura
+CREATE OR REPLACE FUNCTION sp_Fatura_DELETE(
+    p_fatura_id INT
+) RETURNS VOID AS $$
+BEGIN
+    BEGIN
+        DELETE FROM fatura
+        WHERE fatura_id = p_fatura_id;
+    EXCEPTION
+        WHEN OTHERS THEN
+            RAISE EXCEPTION 'Erro na exclusão da fatura: %', SQLERRM;
+    END;
+END
+$$ LANGUAGE plpgsql;
+
+--Itens_Encomenda
+--Inserir Itens_Encomenda
+
+CREATE OR REPLACE FUNCTION sp_ItensEncomenda_CREATE(
+    p_encomenda_id INT,
+    p_produto_id INT,
+    p_quantidade INT
+) RETURNS VOID AS $$
+DECLARE
+    v_preco_unitario DECIMAL;
+    v_preco_total DECIMAL;
+BEGIN
+    -- Obter o preço unitário do produto
+    SELECT preco 
+    INTO v_preco_unitario
+    FROM produto
+    WHERE produto_id = p_produto_id;
+
+    -- Calcular o preço total
+    v_preco_total := v_preco_unitario * p_quantidade;
+
+    -- Inserir o item na tabela itens_encomenda
+    INSERT INTO itens_encomenda (encomenda_id, produto_id, quantidade, preco_total)
+    VALUES (p_encomenda_id, p_produto_id, p_quantidade, v_preco_total);
+
+EXCEPTION
+    WHEN OTHERS THEN
+        -- Captura de erro genérico
+        RAISE EXCEPTION 'Erro na inserção do item da encomenda: %', SQLERRM;
+END
+$$ LANGUAGE plpgsql;
+
+
+--Selecionar Itens_Encomenda
+CREATE OR REPLACE FUNCTION sp_ItensEncomenda_READ(
+    p_encomenda_id INT,
+    p_produto_id INT
+) RETURNS TABLE(encomenda_id INT, produto_id INT, quantidade INT, preco_total DECIMAL) AS $$
+BEGIN
+    RETURN QUERY
+    SELECT ie.encomenda_id, ie.produto_id, ie.quantidade, ie.preco_total
+    FROM itens_encomenda ie
+    WHERE ie.encomenda_id = p_encomenda_id
+      AND ie.produto_id = p_produto_id;
+END
+$$ LANGUAGE plpgsql;
+
+--Atualizar Itens_Encomenda
+CREATE OR REPLACE FUNCTION sp_ItensEncomenda_UPDATE(
+    p_encomenda_id INT,
+    p_produto_id INT,
+    p_quantidade INT,
+    p_preco_total DECIMAL
+) RETURNS VOID AS $$
+BEGIN
+    BEGIN
+        UPDATE itens_encomenda
+        SET quantidade = p_quantidade,
+            preco_total = p_preco_total
+        WHERE encomenda_id = p_encomenda_id
+          AND produto_id = p_produto_id;
+    EXCEPTION
+        WHEN OTHERS THEN
+            RAISE EXCEPTION 'Erro na atualização do item de encomenda: %', SQLERRM;
+    END;
+END
+$$ LANGUAGE plpgsql;
+
+--Eliminar Itens_Encomenda
+CREATE OR REPLACE FUNCTION sp_ItensEncomenda_DELETE(
+    p_encomenda_id INT,
+    p_produto_id INT
+) RETURNS VOID AS $$
+BEGIN
+    BEGIN
+        DELETE FROM itens_encomenda
+        WHERE encomenda_id = p_encomenda_id
+          AND produto_id = p_produto_id;
+    EXCEPTION
+        WHEN OTHERS THEN
+            RAISE EXCEPTION 'Erro na exclusão do item de encomenda: %', SQLERRM;
+    END;
+END
+$$ LANGUAGE plpgsql;
+
+--Fornecedor
+--Inserir Fornecedor
+
+CREATE OR REPLACE FUNCTION sp_Fornecedor_CREATE(
+    p_nome VARCHAR,
+    p_contato VARCHAR,
+    p_endereco TEXT
+) RETURNS VOID AS $$
+BEGIN
+    -- Tentativa de inserção na tabela fornecedor
+    BEGIN
+        INSERT INTO fornecedor (nome, contato, endereco)
+        VALUES (p_nome, p_contato, p_endereco);
+
+    EXCEPTION
+        WHEN OTHERS THEN
+            -- Em caso de erro, capturamos a exceção e lançamos um erro genérico
+            RAISE EXCEPTION 'Erro na inserção do fornecedor: %', SQLERRM;
+    END;
+END
+$$ LANGUAGE plpgsql;
+
+--Selecionar Fornecedor
+CREATE OR REPLACE FUNCTION sp_Fornecedor_READ(
+    p_fornecedor_id INT
+) RETURNS TABLE(fornecedor_id INT, nome VARCHAR, contato VARCHAR, endereco TEXT) AS $$
+BEGIN
+    RETURN QUERY
+    SELECT f.fornecedor_id, f.nome, f.contato, f.endereco
+    FROM fornecedor f
+    WHERE f.fornecedor_id = p_fornecedor_id;
+END
+$$ LANGUAGE plpgsql;
+
+--Atualizar Fornecedor
+CREATE OR REPLACE FUNCTION sp_Fornecedor_UPDATE(
+    p_fornecedor_id INT,
+    p_nome VARCHAR,
+    p_contato VARCHAR,
+    p_endereco TEXT
+) RETURNS VOID AS $$
+BEGIN
+    BEGIN
+        UPDATE fornecedor
+        SET nome = p_nome,
+            contato = p_contato,
+            endereco = p_endereco
+        WHERE fornecedor_id = p_fornecedor_id;
+    EXCEPTION
+        WHEN OTHERS THEN
+            RAISE EXCEPTION 'Erro na atualização do fornecedor: %', SQLERRM;
+    END;
+END
+$$ LANGUAGE plpgsql;
+
+--Eliminar Fornecedor
+CREATE OR REPLACE FUNCTION sp_Fornecedor_DELETE(
+    p_fornecedor_id INT
+) RETURNS VOID AS $$
+BEGIN
+    BEGIN
+        DELETE FROM fornecedor
+        WHERE fornecedor_id = p_fornecedor_id;
+    EXCEPTION
+        WHEN OTHERS THEN
+            RAISE EXCEPTION 'Erro na exclusão do fornecedor: %', SQLERRM;
+    END;
+END
+$$ LANGUAGE plpgsql;
+
+
+--Requisicao_Produto
+--Inserir Requisicao_Produto
+CREATE OR REPLACE FUNCTION sp_RequisicaoProduto_CREATE(
+    p_fornecedor_id INT,
+    p_produto_id INT,
+    p_quantidade INT,
+    p_data_rececao TIMESTAMP
+) RETURNS VOID AS $$
+BEGIN
+    -- Tentativa de inserção na tabela requisicao_produto
+    BEGIN
+        INSERT INTO requisicao_produto (fornecedor_id, produto_id, quantidade, data_rececao)
+        VALUES (p_fornecedor_id, p_produto_id, p_quantidade, p_data_rececao);
+
+    EXCEPTION
+        WHEN OTHERS THEN
+            -- Em caso de erro, capturamos a exceção e lançamos um erro genérico
+            RAISE EXCEPTION 'Erro na inserção da requisição de produto: %', SQLERRM;
+    END;
+END
+$$ LANGUAGE plpgsql;
+
+--Selecionar Requisicao_Produto
+CREATE OR REPLACE FUNCTION sp_RequisicaoProduto_READ(
+    p_requisicao_id INT
+) RETURNS TABLE(requisicao_id INT, fornecedor_id INT, produto_id INT, quantidade INT, data_requisicao TIMESTAMP, data_rececao TIMESTAMP) AS $$
+BEGIN
+    RETURN QUERY
+    SELECT r.requisicao_id, r.fornecedor_id, r.produto_id, r.quantidade, r.data_requisicao, r.data_rececao
+    FROM requisicao_produto r
+    WHERE r.requisicao_id = p_requisicao_id;
+END
+$$ LANGUAGE plpgsql;
+
+--Atualizar Requisicao_Produto
+CREATE OR REPLACE FUNCTION sp_RequisicaoProduto_UPDATE(
+    p_requisicao_id INT,
+    p_fornecedor_id INT,
+    p_produto_id INT,
+    p_quantidade INT,
+    p_data_rececao TIMESTAMP
+) RETURNS VOID AS $$
+BEGIN
+    BEGIN
+        UPDATE requisicao_produto
+        SET fornecedor_id = p_fornecedor_id,
+            produto_id = p_produto_id,
+            quantidade = p_quantidade,
+            data_rececao = p_data_rececao
+        WHERE requisicao_id = p_requisicao_id;
+    EXCEPTION
+        WHEN OTHERS THEN
+            RAISE EXCEPTION 'Erro na atualização da requisição de produto: %', SQLERRM;
+    END;
+END
+$$ LANGUAGE plpgsql;
+
+--Eliminar Requisicao_Produto
+CREATE OR REPLACE FUNCTION sp_RequisicaoProduto_DELETE(
+    p_requisicao_id INT
+) RETURNS VOID AS $$
+BEGIN
+    BEGIN
+        DELETE FROM requisicao_produto
+        WHERE requisicao_id = p_requisicao_id;
+    EXCEPTION
+        WHEN OTHERS THEN
+            RAISE EXCEPTION 'Erro na exclusão da requisição de produto: %', SQLERRM;
+    END;
+END
+$$ LANGUAGE plpgsql;
+
+--Fatura_Fornecedor
+--Inserir Fatura_Fornecedor
+
+CREATE OR REPLACE FUNCTION sp_FaturaFornecedor_CREATE(
+    p_fornecedor_id INT,
+    p_valor_total DECIMAL
+) RETURNS VOID AS $$
+BEGIN
+    -- Tentativa de inserção na tabela fatura_fornecedor
+    BEGIN
+        INSERT INTO fatura_fornecedor (fornecedor_id, valor_total)
+        VALUES (p_fornecedor_id, p_valor_total);
+
+    EXCEPTION
+        WHEN OTHERS THEN
+            -- Em caso de erro, capturamos a exceção e lançamos um erro genérico
+            RAISE EXCEPTION 'Erro na inserção da fatura do fornecedor: %', SQLERRM;
+    END;
+END
+$$ LANGUAGE plpgsql;
+
+--Selecionar Fatura_Fornecedor
+CREATE OR REPLACE FUNCTION sp_FaturaFornecedor_READ(
+    p_fatura_fornecedor_id INT
+) RETURNS TABLE(fatura_fornecedor_id INT, fornecedor_id INT, data_emissao TIMESTAMP, valor_total DECIMAL(10, 2)) AS $$
+BEGIN
+    RETURN QUERY
+    SELECT f.fatura_fornecedor_id, f.fornecedor_id, f.data_emissao, f.valor_total
+    FROM fatura_fornecedor f
+    WHERE f.fatura_fornecedor_id = p_fatura_fornecedor_id;
+END
+$$ LANGUAGE plpgsql;
+
+--Atualizar FaturaFornecedor
+CREATE OR REPLACE FUNCTION sp_FaturaFornecedor_UPDATE(
+    p_fatura_fornecedor_id INT,
+    p_fornecedor_id INT,
+    p_valor_total DECIMAL(10, 2)
+) RETURNS VOID AS $$
+BEGIN
+    BEGIN
+        UPDATE fatura_fornecedor
+        SET fornecedor_id = p_fornecedor_id,
+            valor_total = p_valor_total
+        WHERE fatura_fornecedor_id = p_fatura_fornecedor_id;
+    EXCEPTION
+        WHEN OTHERS THEN
+            RAISE EXCEPTION 'Erro na atualização da fatura do fornecedor: %', SQLERRM;
+    END;
+END
+$$ LANGUAGE plpgsql;
+
+--Eliminar Fatura_Fornecedor
+CREATE OR REPLACE FUNCTION sp_FaturaFornecedor_DELETE(
+    p_fatura_fornecedor_id INT
+) RETURNS VOID AS $$
+BEGIN
+    BEGIN
+        DELETE FROM fatura_fornecedor
+        WHERE fatura_fornecedor_id = p_fatura_fornecedor_id;
+    EXCEPTION
+        WHEN OTHERS THEN
+            RAISE EXCEPTION 'Erro na exclusão da fatura do fornecedor: %', SQLERRM;
+    END;
+END
+$$ LANGUAGE plpgsql;
+
+--FIM CRUD
+
+--Inserção Encomenda com vários produtos (basicamente quando o utilizador acaba o seu pedido)
+CREATE OR REPLACE FUNCTION sp_Encomenda_Com_Itens_CREATE(
+    p_utilizador_id INT,
+    p_morada VARCHAR,
+    p_estado VARCHAR,
+    p_itens JSON
+) RETURNS VOID AS $$
+DECLARE
+    v_encomenda_id INT;
+    item JSON;
+    produto_id INT;
+    quantidade INT;
+BEGIN
+    -- Passo 1: Inserir a encomenda e obter o ID gerado
+    INSERT INTO encomenda (utilizador_id, morada, estado)
+    VALUES (p_utilizador_id, p_morada, p_estado)
+    RETURNING encomenda_id INTO v_encomenda_id;
+
+    -- Passo 2: Iterar pelos itens recebidos no JSON
+    FOR item IN SELECT * FROM json_array_elements(p_itens)
+    LOOP
+        -- Extrair os detalhes do item
+        produto_id := (item->>'produto_id')::INT;
+        quantidade := (item->>'quantidade')::INT;
+
+        -- Passo 3: Inserir cada item usando o procedimento existente
+        PERFORM sp_ItensEncomenda_CREATE(v_encomenda_id, produto_id, quantidade);
+    END LOOP;
+END
+$$ LANGUAGE plpgsql;
+
+
+SELECT sp_Encomenda_Com_Itens_CREATE(
+    4, -- utilizador_id
+    'Rua Exemplo, 123', -- morada
+    'pendente', -- estado
+    '[ 
+        {"produto_id": 101, "quantidade": 2},
+        {"produto_id": 102, "quantidade": 1}
+    ]'::JSON -- itens
+);
+
+--Verificar Email Existe
+CREATE OR REPLACE FUNCTION VerificarLogin(
+    p_email VARCHAR(255)
+) RETURNS TABLE (
+    utilizador_id INT,
+    nome VARCHAR,
+    email VARCHAR,
+    senha VARCHAR,
+    isAdmin BOOLEAN
+) AS $$
+BEGIN
+    RETURN QUERY
+    SELECT u.utilizador_id, u.nome, u.email, u.senha, u.isAdmin
+    FROM utilizador u
+    WHERE u.email = p_email;
+END;
+$$ LANGUAGE plpgsql;
+
+--Update para IsAdmin
+CREATE OR REPLACE FUNCTION sp_Utilizador_UpdateIsAdmin(
+    p_utilizador_id INT,
+    p_isAdmin BOOLEAN
+) RETURNS VOID AS $$
+BEGIN
+    BEGIN
+        UPDATE utilizador
+        SET isAdmin = p_isAdmin
+        WHERE utilizador_id = p_utilizador_id;
+    EXCEPTION
+        WHEN OTHERS THEN
+            RAISE EXCEPTION 'Erro ao atualizar isAdmin do utilizador com ID %: %', p_utilizador_id, SQLERRM;
+    END;
+END
+$$ LANGUAGE plpgsql;
+
+SELECT sp_Utilizador_UpdateIsAdmin(5, TRUE);
+
+
+--Views
+--View Encomendas de um user
+CREATE VIEW vw_encomendas_utilizador AS
+SELECT 
+    e.encomenda_id,
+    e.utilizador_id,
+    e.morada,
+    e.data_encomenda,
+    e.estado,
+    p.produto_id,
+    p.nome AS nome_produto,
+    p.descricao,
+    p.preco AS preco_unitario,
+    i.quantidade,
+    i.preco_total
+FROM 
+    encomenda e
+JOIN 
+    itens_encomenda i ON e.encomenda_id = i.encomenda_id
+JOIN 
+    produto p ON i.produto_id = p.produto_id;
+	
+SELECT * 
+FROM vw_encomendas_utilizador
+WHERE utilizador_id = 4;
+
+--Trigger
+--Trigger quando uma venda é efetuada
+CREATE OR REPLACE FUNCTION atualizar_stock_produto()
+RETURNS TRIGGER AS $$
+BEGIN
+    -- Verificar se há estoque suficiente
+    IF (SELECT quantidade_em_stock FROM produto WHERE produto_id = NEW.produto_id) < NEW.quantidade THEN
+        RAISE EXCEPTION 'Estoque insuficiente para o produto %', NEW.produto_id;
+    END IF;
+
+    -- Atualizar o estoque do produto
+    UPDATE produto
+    SET quantidade_em_stock = quantidade_em_stock - NEW.quantidade
+    WHERE produto_id = NEW.produto_id;
+
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trigger_atualizar_stock_itens
+AFTER INSERT ON itens_encomenda
+FOR EACH ROW
+EXECUTE FUNCTION atualizar_stock_produto();
+
+SELECT sp_Encomenda_Com_Itens_CREATE(
+    4, -- utilizador_id
+    'Rua Exemplo, 123', -- morada
+    'pendente', -- estado
+    '[ 
+        {"produto_id": 1, "quantidade": 2},
+        {"produto_id": 2, "quantidade": 1}
+    ]'::JSON -- itens
+);

@@ -164,7 +164,7 @@
     }
 
     /* Centralização do conteúdo do produto */
-    .product-info-container {
+    .encomenda-info-container {
         display: flex;
         justify-content: center;
         align-items: center;
@@ -175,7 +175,7 @@
         border-radius: 15px;
     }
 
-    .product-info {
+    .encomenda-info {
         display: flex;
         flex-direction: column;
         justify-content: center;
@@ -192,7 +192,7 @@
         transform: translateY(20px);
     }
 
-    .product-info h1 {
+    .encomenda-info h1 {
         font-size: 2.2rem;
         margin-bottom: 15px;
         font-weight: bold;
@@ -200,14 +200,14 @@
         transition: color 0.3s ease;
     }
 
-    .product-info p {
+    .encomenda-info p {
         font-size: 1.1rem;
         margin-bottom: 20px;
         line-height: 1.5;
         color: #555;
     }
 
-    .product-info .btn {
+    .encomenda-info .btn {
         transition: transform 0.3s ease, background-color 0.3s ease;
         border-radius: 5px;
         padding: 12px 25px;
@@ -215,27 +215,27 @@
         width: 100%;
     }
 
-    .product-info .btn:hover {
+    .encomenda-info .btn:hover {
         background-color: #e76f51;
         transform: translateY(-5px);
         box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
     }
 
     /* Aumento da foto do produto */
-    .product-image-container {
+    .encomenda-image-container {
         position: relative;
         overflow: hidden;
         max-width: 100%;
     }
 
-    .product-image {
+    .encomenda-image {
         width: 100%;
         height: auto;
         border-radius: 10px;
     }
 
     /* Remover o efeito de hover da imagem */
-    .product-image:hover {
+    .encomenda-image:hover {
         transform: none;
         filter: none;
     }
@@ -273,15 +273,12 @@
 </style>
 
 <!-- Conteúdo da página do produto -->
-<div class="product-info-container">
-    <div class="product-info">
+<div class="encomenda-info-container">
+    <div class="encomenda-info">
         <div class="row">
-            <div class="col-md-6 product-image-container">
-                <img src="https://via.placeholder.com/800x600" class="product-image" alt="Imagem do Produto">
-            </div>
             <div class="col-md-6">
-                <h1>{{ produto.nome }}</h1>
-                <p>{{ produto.descricao }}</p>
+                <h1>{{ encomenda.nome_user }}</h1>
+                <p>{{ encomenda.morada }}</p>
                 <p class="text-success fw-bold">Preço: $ {{ produto.preco }}</p>
                 <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#modalCarrinho">Adicionar ao
                     Carrinho</button>

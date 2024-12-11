@@ -260,6 +260,9 @@
         <a href="{% url 'index' %}">Página Inicial</a>
         <a href="{% url 'perfil' %}">Perfil</a>
         <a href="#">Contacto</a>
+        {% if is_admin %}
+        <a href="{% url 'admin_dashboard' %}">Dashboard Admin</a>
+        {% endif %}
         <a href="{% url 'logout_view' %}" class="logout">Logout</a>
     </nav>
 
