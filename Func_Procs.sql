@@ -37,13 +37,17 @@ CREATE OR REPLACE FUNCTION sp_Utilizador_UPDATE(
     p_utilizador_id INT,
     p_nome VARCHAR,
     p_email VARCHAR,
-    p_senha VARCHAR,
-    p_isAdmin BOOLEAN
+    p_senha VARCHAR DEFAULT NULL,  -- Optional parameter
+    p_isAdmin BOOLEAN DEFAULT NULL  -- Optional parameter with a default value
 ) RETURNS VOID AS $$
 BEGIN
     BEGIN
         UPDATE utilizador
-        SET nome = p_nome, email = p_email, senha = p_senha, isAdmin = p_isAdmin
+        SET 
+            nome = p_nome,
+            email = p_email,
+            senha = COALESCE(p_senha, senha),  -- If p_senha is NULL, retain the current value
+            isAdmin = COALESCE(p_isAdmin, isAdmin)  -- If p_isAdmin is NULL, retain the current value
         WHERE utilizador_id = p_utilizador_id;
     EXCEPTION
         WHEN OTHERS THEN
@@ -51,6 +55,8 @@ BEGIN
     END;
 END
 $$ LANGUAGE plpgsql;
+
+
 
 --Eliminar Utilizador
 CREATE OR REPLACE FUNCTION sp_Utilizador_DELETE(
@@ -742,6 +748,14 @@ END;
 $$ LANGUAGE plpgsql;
 
 SELECT * FROM ultimos_produtos_adicionados();
+
+--Função Obter todas as categorias
+CREATE OR REPLACE FUNCTION todas_categorias()
+RETURNS TABLE(categoria_id INT, nome VARCHAR) AS $$
+BEGIN
+    RETURN QUERY SELECT c.categoria_id, c.nome FROM categoria c;
+END;
+$$ LANGUAGE plpgsql;
 
 
 --Views
