@@ -1,32 +1,41 @@
 {% extends 'base.html' %}
 
-{% block content %} 
+{% block content %}
 <style>
     body {
         overflow-y: auto;
         display: flex;
         justify-content: center;
-        min-height: 100vh; /* Para que o conteúdo ocupe toda a altura da tela */
+        min-height: 100vh;
+        /* Para que o conteúdo ocupe toda a altura da tela */
         margin: 0;
     }
+
     .container {
         display: flex;
         flex-direction: column;
         align-items: center;
-        overflow-y: auto; /* Permite rolagem vertical do container */
-        width: 100%; /* Define a largura da área do conteúdo */
+        overflow-y: auto;
+        /* Permite rolagem vertical do container */
+        width: 100%;
+        /* Define a largura da área do conteúdo */
     }
+
     .title {
         text-align: center;
         margin-top: -150px;
         margin-bottom: 20px;
     }
+
     .table-container {
-        margin-top: 20px; /* Ajuste para a distância entre o título e a tabela */
+        margin-top: 20px;
+        /* Ajuste para a distância entre o título e a tabela */
         width: 100%;
     }
+
     .table {
-        margin: 0 auto; /* Centraliza a tabela horizontalmente */
+        margin: 0 auto;
+        /* Centraliza a tabela horizontalmente */
     }
 </style>
 <div class="container">
@@ -40,34 +49,23 @@
                     <th>Quantidade</th>
                     <th>Preço Unitário</th>
                     <th>Subtotal</th>
-                    <th>Ação</th>
                 </tr>
             </thead>
             <tbody>
+                {% for produto_id, item in carrinho %}
                 <tr>
-                    <td>Produto 1</td>
-                    <td>2</td>
-                    <td>49,90 €</td>
-                    <td>99,80 €</td>
-                    <td>
-                        <button class="btn btn-sm btn-danger">Remover</button>
-                    </td>
+                    <td>{{ item.name }}</td>
+                    <td>{{ item.quantity }}</td>
+                    <td>{{ item.price|floatformat:2 }} €</td>
+                    <td>{{ item.subtotal|floatformat:2 }} €</td>
                 </tr>
-                <tr>
-                    <td>Produto 2</td>
-                    <td>1</td>
-                    <td>79,90 €</td>
-                    <td>79,90 €</td>
-                    <td>
-                        <button class="btn btn-sm btn-danger">Remover</button>
-                    </td>
-                </tr>
+                {% endfor %}
             </tbody>
         </table>
     </div>
 
     <div class="text-end mt-4">
-        <h4>Total: 239,67 €</h4>
+        <h4>Total: {{ carrinho_total|floatformat:2 }} €</h4>
         <a href="{% url 'checkout' %}" class="btn btn-success btn-lg">Finalizar Compra</a>
     </div>
 </div>

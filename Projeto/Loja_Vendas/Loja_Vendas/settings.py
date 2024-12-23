@@ -78,10 +78,10 @@ WSGI_APPLICATION = 'Loja_Vendas.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'BD2',
-        'USER': 'bdUser',
-        'PASSWORD': 'postgres',
-        'HOST': 'localhost',
+        'NAME': 'bd2_2zor',
+        'USER': 'bd2_2zor_user',
+        'PASSWORD': 'XEwjUXxV9tLOj5LoPfMbF2YXEHbCmmCX',
+        'HOST': 'dpg-ctktad5umphs73d5uhmg-a.frankfurt-postgres.render.com',
         'PORT': '5432',
     }
 }

@@ -17,10 +17,12 @@ urlpatterns = [
     path('admin/perfil/', views.perfil_admin, name='perfil_admin'), # Perfil do admin
     path('dashboard/', views.admin_dashboard, name='admin_dashboard'),
     path('dashboard/encomendas/', views.dashboard_encomendas, name='dashboard_encomendas'),
+    path('add_to_cart/<int:produto_id>/', views.add_to_cart, name='add_to_cart'),
     #Produtos
     path('dashboard/produtos/', views.dashboard_produtos, name='dashboard_produtos'),
     path('dashboard/produtos/add', views.add_produto, name='add_produto'),
     path('dashboard/produtos/add_categoria', views.add_categoria, name='add_categoria'),
+
     #Clientes
     path('dashboard/clientes/', views.dashboard_clientes, name='dashboard_clientes'),
     path('dashboard/clientes/update', views.update_cliente, name='update_cliente'),

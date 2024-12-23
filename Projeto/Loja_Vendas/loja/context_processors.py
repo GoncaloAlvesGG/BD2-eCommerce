@@ -3,4 +3,5 @@ def user_info(request):
         'nome': request.session.get('nome', 'Visitante'),
         'email': request.session.get('email', 'Sem email'),
         'is_admin': request.session.get('is_admin', 'False'),
+        'cart': request.session.get('cart', {}),
     }

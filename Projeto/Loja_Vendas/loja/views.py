@@ -8,21 +8,8 @@ from django.db import connection
 from django.http import Http404, JsonResponse
 from django.contrib import messages
 from collections import defaultdict
+from decimal import Decimal
 import bcrypt
-
-
-#dados ficticios
-produtos = [
-    {'id': 1, 'nome': 'Produto 1', 'preco': 99.99, 'descricao': 'Descrição breve do produto.'},
-    {'id': 2, 'nome': 'Produto 2', 'preco': 149.99, 'descricao': 'Descrição breve do produto.'},
-    {'id': 3, 'nome': 'Produto 3', 'preco': 199.99, 'descricao': 'Descrição breve do produto.'},
-    {'id': 4, 'nome': 'Produto 4', 'preco': 129.99, 'descricao': 'Descrição breve do produto.'},
-    {'id': 5, 'nome': 'Produto 5', 'preco': 299.99, 'descricao': 'Descrição breve do produto.'},
-    {'id': 6, 'nome': 'Produto 6', 'preco': 99.99, 'descricao': 'Descrição breve do produto.'},
-    {'id': 7, 'nome': 'Produto 7', 'preco': 79.99, 'descricao': 'Descrição breve do produto.'},
-    {'id': 8, 'nome': 'Produto 8', 'preco': 49.99, 'descricao': 'Descrição breve do produto.'},
-]
-
 
 def produto_detalhe(request, produto_id):
     with connection.cursor() as cursor:
@@ -110,9 +97,7 @@ def index(request):
     produtos = produtos_4recentes()
     return render(request, 'index.html', {'produtos': produtos})
 
-def carrinho(request):
-    # Página do carrinho (vazia por enquanto)
-    return render(request, 'carrinho.html')
+
 
 def checkout(request):
     # Página de checkout (vazia por enquanto)
@@ -158,6 +143,82 @@ def dashboard_produtos(request):
         produto.categoria_nome = categoria_nome
     
     return render(request, 'dashboard_produtos.html', {'produtos': produtos, 'categorias': categorias})
+
+def get_product_data(produto_id):
+    with connection.cursor() as cursor:
+        # Call the stored function sp_Produto_READ with produto_id
+        cursor.execute("SELECT * FROM sp_Produto_READ(%s);", [produto_id])
+        
+        # Fetch the result (this function returns a table, so fetchone is appropriate for a single product)
+        result = cursor.fetchone()
+        
+        # If result is None, no product was found
+        if result:
+            produto_data = {
+                'produto_id': result[0],
+                'nome': result[1],
+                'descricao': result[2],
+                'preco': result[3],
+                'categoria_id': result[4],
+                'quantidade_em_stock': result[5],
+            }
+            return produto_data
+        else:
+            return None
+        
+
+
+def carrinho(request):
+    # Get the cart from the session
+    cart = request.session.get('cart', {})
+
+    # Calculate the total for the cart and subtotals for each item
+    for item in cart.values():
+        item['subtotal'] = item['price'] * item['quantity']
+    
+    # Calculate the overall total
+    carrinho_total = sum(item['subtotal'] for item in cart.values())
+
+    # Pass cart and total to the template
+    return render(request, 'carrinho.html', {
+        'carrinho': cart.items(),
+        'carrinho_total': carrinho_total
+    })
+
+
+def add_to_cart(request, produto_id):
+    # Get the product data from the stored procedure
+    produto_data = get_product_data(produto_id)
+    
+    if produto_data is None:
+        return JsonResponse({'error': 'Produto não encontrado'}, status=404)
+    
+    # Get quantity from POST (default to 1 if not provided)
+    quantity = request.POST.get('quantity', 1)
+    
+    # Initialize the cart if it's not already in the session
+    if 'cart' not in request.session:
+        request.session['cart'] = {}
+    
+    cart = request.session['cart']
+
+    produto_id = str(produto_id)
+    
+    # If the item is already in the cart, update the quantity
+    if produto_id in cart:
+        cart[produto_id]['quantity'] += int(quantity)
+    else:
+        cart[produto_id] = {
+            'name': produto_data['nome'],
+            'price': float(produto_data['preco']),  # Convert Decimal to float
+            'quantity': int(quantity)
+        }
+    
+    # Save the session
+    request.session.modified = True
+    
+    # Return the product details in the response
+    return render(request, 'carrinho.html', {'produto': produto_data})
 
 def dashboard_configuracoes(request):
     return render(request, 'dashboard_configuracoes.html')
@@ -301,8 +362,6 @@ def delete_cliente(request):
             return JsonResponse({"success": False, "error": str(e)}, status=400)
 
     return JsonResponse({"success": False, "error": "Invalid request"}, status=400)
-
-from django.http import JsonResponse
 
 def ver_encomendas_clientes(request, utilizador_id):
     encomendas = obter_encomendas_utilizador(utilizador_id)  # Function to get orders by user
