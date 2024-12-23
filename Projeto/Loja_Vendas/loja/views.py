@@ -146,7 +146,18 @@ def dashboard_encomendas(request):
 
 def dashboard_produtos(request):
     produtos = ProdutoView.objects.all()
-    return render(request, 'dashboard_produtos.html', {'produtos': produtos})
+    categorias = get_categorias() 
+
+    categoria_dict = {categoria['categoria_id']: categoria['nome'] for categoria in categorias}
+
+    # Add the category name to each produto
+    for produto in produtos:
+        # Look up the category name based on categoria_id
+        categoria_nome = categoria_dict.get(produto.categoria_id, 'Categoria desconhecida')
+        # Add the category name to the produto object
+        produto.categoria_nome = categoria_nome
+    
+    return render(request, 'dashboard_produtos.html', {'produtos': produtos, 'categorias': categorias})
 
 def dashboard_configuracoes(request):
     return render(request, 'dashboard_configuracoes.html')
@@ -177,7 +188,16 @@ def produtos_4recentes():
         resultados = [dict(zip(colunas, row)) for row in cursor.fetchall()]
     return resultados
 
-##Funções úteis
+def get_categorias():
+    # Calling the stored procedure using raw SQL
+    with connection.cursor() as cursor:
+        cursor.callproc('todas_categorias')  # Calling the stored procedure
+        rows = cursor.fetchall()  # Fetch all rows returned by the procedure
+    
+    # Prepare the categories data
+    categorias = [{'categoria_id': row[0], 'nome': row[1]} for row in rows]
+    
+    return categorias
 
 def obter_encomendas():
     encomendas = EncomendaView.objects.all()
@@ -222,6 +242,122 @@ def obter_encomendas():
     data = list(grouped_encomendas.values())
     
     return data
+
+def add_fornecedor(request):
+
+    nome = request.POST['nome']
+    contacto = request.POST['contacto']
+    endereco = request.POST['endereco']
+    with connection.cursor() as cursor:
+            cursor.callproc('sp_Fornecedor_CREATE', [nome, contacto, endereco])
+            messages.success(request, "Utilizador registado com sucesso!")
+            return JsonResponse({"success": True})
+
+    return JsonResponse({"success": False, "error": "Invalid request"}, status=400)
+
+def update_fornecedor(request):
+    if request.method == 'POST':
+        fornecedor_id = request.POST['fornecedor_id']
+        nome = request.POST['nome']
+        contacto = request.POST['contacto']
+        endereco = request.POST['endereco']
+
+        try:
+            with connection.cursor() as cursor:
+                cursor.callproc('sp_Fornecedor_UPDATE', [fornecedor_id, nome, contacto, endereco])
+            return JsonResponse({"success": True})
+        except Exception as e:
+            return JsonResponse({"success": False, "error": str(e)}, status=400)
+
+    return JsonResponse({"success": False, "error": "Invalid request"}, status=400)
+
+def delete_fornecedor(request):
+    if request.method == 'POST':
+        try:
+            print(request.POST) 
+            fornecedor_id = request.POST['fornecedor_id']
+
+            with connection.cursor() as cursor:
+                cursor.callproc('sp_Fornecedor_DELETE', [fornecedor_id])
+            return JsonResponse({"success": True})
+        except Exception as e:
+            return JsonResponse({"success": False, "error": str(e)}, status=400)
+
+    return JsonResponse({"success": False, "error": "Invalid request"}, status=400)
+
+def delete_cliente(request):
+    if request.method == 'POST':
+        try:
+            print(request.POST) 
+            cliente_id = request.POST['cliente_id']
+
+            if not cliente_id:
+                return JsonResponse({"success": False, "error": "Cliente ID não fornecido"}, status=400)
+
+            with connection.cursor() as cursor:
+                cursor.callproc('sp_Utilizador_DELETE', [cliente_id])
+            return JsonResponse({"success": True})
+        except Exception as e:
+            return JsonResponse({"success": False, "error": str(e)}, status=400)
+
+    return JsonResponse({"success": False, "error": "Invalid request"}, status=400)
+
+from django.http import JsonResponse
+
+def ver_encomendas_clientes(request, utilizador_id):
+    encomendas = obter_encomendas_utilizador(utilizador_id)  # Function to get orders by user
+    return render(request, 'encomendas_table.html', {'encomendas': encomendas})
+
+
+def add_produto(request):
+    # Retrieve data from the POST request
+    nome = request.POST['nome']
+    descricao = request.POST.get('descricao', '')
+    preco = request.POST['preco']
+    categoria_id = request.POST['categoria']
+    quantidade = request.POST['quantidade']
+
+    # Use a stored procedure to insert the product data (replace with actual procedure if needed)
+    with connection.cursor() as cursor:
+        cursor.callproc('sp_Produto_CREATE', [nome, descricao, preco, categoria_id, quantidade])
+
+    # Send success message
+    messages.success(request, "Produto adicionado com sucesso!")
+
+    return JsonResponse({"success": True})
+
+def add_categoria(request):
+    # Retrieve data from the POST request
+    nome = request.POST['nome']
+
+    # Use a stored procedure to insert the product data (replace with actual procedure if needed)
+    with connection.cursor() as cursor:
+        cursor.callproc('sp_Categoria_CREATE', [nome])
+
+    # Send success message
+    messages.success(request, "Categoria adicionadoa com sucesso!")
+
+    return JsonResponse({"success": True})
+
+    
+
+def update_cliente(request):
+    if request.method == 'POST':
+        try:
+            cliente_id = request.POST['cliente_id']
+            nome = request.POST['nome']
+            email = request.POST['email']
+            isAdmin = request.POST.get('isAdmin', 'false') == 'true'
+            senha = request.POST.get('senha', None) 
+
+            
+            with connection.cursor() as cursor:
+                cursor.callproc('sp_Utilizador_UPDATE', [cliente_id, nome, email, senha, isAdmin])
+            return JsonResponse({"success": True})
+        except Exception as e:
+            return JsonResponse({"success": False, "error": str(e)}, status=400)
+
+    return JsonResponse({"success": False, "error": "Invalid request"}, status=400)
 
 def obter_encomendas_utilizador(utilizador_id):
     # Filtra as encomendas da view com base no utilizador_id

@@ -52,11 +52,36 @@
     .btn:hover {
         background-color: #0056b3;
     }
+
+    .btn-small {
+        background-color: #007bff;
+        color: white;
+        padding: 5px 10px;
+        border-radius: 3px;
+        text-decoration: none;
+        font-size: 12px;
+    }
+
+    .btn-small:hover {
+        background-color: #0056b3;
+    }
+
+    .btn-danger {
+        background-color: #dc3545;
+    }
+
+    .btn-danger:hover {
+        background-color: #c82333;
+    }
 </style>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <div class="products-container">
     <div class="header">
         <h2>Todos os Produtos</h2>
+        <button class="btn" onclick="adicionarProduto()">Adicionar Produto</button>
+        <button class="btn" onclick="adicionarCategoria()">Adicionar Categoria</button>
     </div>
     <table class="products-table">
         <thead>
@@ -67,7 +92,7 @@
                 <th>Preço</th>
                 <th>Categoria</th>
                 <th>Quantidade</th>
-                <th></th>
+                <th>Ações</th>
             </tr>
         </thead>
         <tbody>
@@ -77,10 +102,13 @@
                 <td>{{ produto.nome }}</td>
                 <td>{{ produto.descricao|default:"Sem descrição" }}</td>
                 <td>€{{ produto.preco }}</td>
-                <td>{{ produto.nome_categoria }}</td>
+                <td>{{ produto.categoria_nome }}</td>
                 <td>{{ produto.quantidade_em_stock }}</td>
                 <td>
-                    <a href="{% url 'produto_detalhe' produto_id=produto.produto_id %}" class="btn">Detalhes</a>
+                    <a href="{% url 'produto_detalhe' produto_id=produto.produto_id %}" class="btn-small">Detalhes</a>
+                    <a class="btn-small"
+                        onclick="alterarProduto('{{ produto.produto_id }}', '{{ produto.nome }}', '{{ produto.descricao }}', '{{ produto.preco }}', '{{ produto.categoria_id }}', '{{ produto.quantidade_em_stock }}')">Alterar</a>
+                    <a class="btn-small btn-danger" onclick="excluirProduto('{{ produto.produto_id }}')">Excluir</a>
                 </td>
             </tr>
             {% empty %}
@@ -91,4 +119,105 @@
         </tbody>
     </table>
 </div>
+
+<script>
+    function adicionarProduto() {
+
+        Swal.fire({
+            title: 'Adicionar Produto',
+            html: `
+                <form id="form-adicionar-produto">
+                    <div style="margin-bottom: 10px;">
+                        <label for="nome">Nome:</label><br>
+                        <input type="text" id="nome" name="nome" class="swal2-input" required>
+                    </div>
+                    <div style="margin-bottom: 10px;">
+                        <label for="descricao">Descrição:</label><br>
+                        <textarea id="descricao" name="descricao" class="swal2-input"></textarea>
+                    </div>
+                    <div style="margin-bottom: 10px;">
+                        <label for="preco">Preço:</label><br>
+                        <input type="number" id="preco" name="preco" class="swal2-input" required>
+                    </div>
+                    <div style="margin-bottom: 10px;">
+                        <label for="categoria">Categoria:</label><br>
+                        <select id="categoria" name="categoria" class="swal2-input" required>
+    {% for categoria in categorias %}
+        <option value="{{ categoria.categoria_id }}">{{ categoria.nome }}</option>
+    {% endfor %}
+</select>
+                    </div>
+                    <div style="margin-bottom: 10px;">
+                        <label for="quantidade">Quantidade:</label><br>
+                        <input type="number" id="quantidade" name="quantidade" class="swal2-input" required>
+                    </div>
+                </form>
+            `,
+            confirmButtonText: 'Adicionar',
+            preConfirm: () => {
+                const form = document.getElementById('form-adicionar-produto');
+                const formData = new FormData(form);
+                return fetch('{% url "add_produto" %}', {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-CSRFToken': '{{ csrf_token }}',
+                    },
+                }).then(response => {
+                    if (!response.ok) {
+                        throw new Error('Falha ao adicionar produto');
+                    }
+                    return response.json();
+                }).catch(error => {
+                    Swal.showValidationMessage(`Erro: ${error}`);
+                });
+            },
+        }).then(result => {
+            if (result.isConfirmed) {
+                Swal.fire('Sucesso', 'Produto adicionado com sucesso!', 'success').then(() => {
+                    location.reload();
+                });
+            }
+        });
+    }
+    function adicionarCategoria() {
+        Swal.fire({
+            title: 'Adicionar Categoria',
+            html: `
+                <form id="form-adicionar-categoria">
+                    <div style="margin-bottom: 10px;">
+                        <label for="nome">Nome da Categoria:</label><br>
+                        <input type="text" id="nome" name="nome" class="swal2-input" required>
+                    </div>
+                </form>
+            `,
+            confirmButtonText: 'Adicionar',
+            preConfirm: () => {
+                const form = document.getElementById('form-adicionar-categoria');
+                const formData = new FormData(form);
+                return fetch('{% url "add_categoria" %}', {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-CSRFToken': '{{ csrf_token }}',
+                    },
+                }).then(response => {
+                    if (!response.ok) {
+                        throw new Error('Falha ao adicionar categoria');
+                    }
+                    return response.json();
+                }).catch(error => {
+                    Swal.showValidationMessage(`Erro: ${error}`);
+                });
+            },
+        }).then(result => {
+            if (result.isConfirmed) {
+                Swal.fire('Sucesso', 'Categoria adicionada com sucesso!', 'success').then(() => {
+                    location.reload();
+                });
+            }
+        });
+    }
+</script>
+
 {% endblock %}

@@ -2,7 +2,7 @@
 
 {% load static %}
 
-{% block title %}Utilizadores - Minha Loja{% endblock %}
+{% block title %}Clientes - Minha Loja{% endblock %}
 
 {% block content %}
 
@@ -53,7 +53,30 @@
     .btn:hover {
         background-color: #0056b3;
     }
+
+    .btn-small {
+        background-color: #007bff;
+        color: white;
+        padding: 5px 10px;
+        border-radius: 3px;
+        text-decoration: none;
+        font-size: 12px;
+    }
+
+    .btn-small:hover {
+        background-color: #0056b3;
+    }
+
+    .btn-danger {
+        background-color: #dc3545;
+    }
+
+    .btn-danger:hover {
+        background-color: #c82333;
+    }
 </style>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <div class="products-container">
     <div class="header">
@@ -67,6 +90,7 @@
                 <th>Email</th>
                 <th>Admin</th>
                 <th>Data de Registo</th>
+                <th>Ações</th>
             </tr>
         </thead>
         <tbody>
@@ -77,6 +101,13 @@
                 <td>{{ utilizador.email }}</td>
                 <td>{{ utilizador.isadmin|yesno:"Sim,Não" }}</td>
                 <td>{{ utilizador.data_registo|date:"d/m/Y" }}</td>
+                <td>
+                    <a class="btn-small" onclick="verEncomendas('{{ utilizador.utilizador_id }}')">Ver Encomendas</a>
+                    <a class="btn-small"
+                        onclick="alterarCliente('{{ utilizador.utilizador_id }}', '{{ utilizador.nome }}', '{{ utilizador.email }}', '{{ utilizador.isAdmin }}')">Alterar</a>
+                    <a class="btn-small btn-danger"
+                        onclick="excluirCliente('{{ utilizador.utilizador_id }}')">Excluir</a>
+                </td>
             </tr>
             {% empty %}
             <tr>
@@ -86,4 +117,136 @@
         </tbody>
     </table>
 </div>
+
+<script>
+    function excluirCliente(id) {
+        Swal.fire({
+            title: 'Tem a certeza?',
+            text: 'Esta ação não pode ser desfeita.',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#dc3545',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Sim, excluir!',
+            cancelButtonText: 'Cancelar',
+        }).then(result => {
+            if (result.isConfirmed) {
+                const formData = new FormData();
+                formData.append('cliente_id', id);
+
+                fetch('{% url "delete_cliente" %}', {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-CSRFToken': '{{ csrf_token }}',
+                    },
+                })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Falha ao excluir cliente');
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        if (data.success) {
+                            Swal.fire('Excluído!', 'O cliente foi excluído com sucesso.', 'success').then(() => {
+                                location.reload();
+                            });
+                        } else {
+                            Swal.fire('Erro!', data.error || 'Falha ao excluir cliente.', 'error');
+                        }
+                    })
+                    .catch(error => {
+                        Swal.fire('Erro!', `Erro: ${error.message}`, 'error');
+                    });
+            }
+        });
+    }
+
+    function alterarCliente(id, nome, email, isAdmin) {
+        Swal.fire({
+            title: 'Alterar Cliente',
+            html: `
+            <form id="form-alterar-cliente">
+                <div style="margin-bottom: 10px;">
+                    <label for="nome">Nome:</label><br>
+                    <input type="text" id="nome" name="nome" class="swal2-input" value="${nome}" required>
+                </div>
+                <div style="margin-bottom: 10px;">
+                    <label for="email">Email:</label><br>
+                    <input type="email" id="email" name="email" class="swal2-input" value="${email}" required>
+                </div>
+                <div style="margin-bottom: 10px;">
+                    <label for="isAdmin">Administrador:</label><br>
+                    <input type="checkbox" id="isAdmin" name="isAdmin" class="swal2-input" ${isAdmin ? 'checked' : ''}>
+                </div>
+            </form>
+        `,
+            confirmButtonText: 'Alterar',
+            preConfirm: () => {
+                const form = document.getElementById('form-alterar-cliente');
+                const formData = new FormData(form);
+                formData.append('cliente_id', id);
+
+                return fetch('{% url "update_cliente" %}', {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-CSRFToken': '{{ csrf_token }}',
+                    },
+                }).then(response => {
+                    if (!response.ok) {
+                        throw new Error('Falha ao alterar cliente');
+                    }
+                    return response.json();
+                }).catch(error => {
+                    Swal.showValidationMessage(`Erro: ${error}`);
+                });
+            },
+        }).then(result => {
+            if (result.isConfirmed) {
+                Swal.fire('Sucesso', 'Cliente alterado com sucesso!', 'success').then(() => {
+                    location.reload();
+                });
+            }
+        });
+    }
+
+</script>
+
+<script>
+    function verEncomendas(utilizadorId) {
+        // Show loading alert
+        Swal.fire({
+            title: 'A carregar encomendas...',
+            didOpen: () => {
+                Swal.showLoading()
+            }
+        });
+
+        // Fetch encomendas (orders) and return table HTML
+        fetch(`/dashboard/encomendas_cliente/${utilizadorId}/`)
+            .then(response => response.text())
+            .then(html => {
+                // Inject the HTML table into the SweetAlert
+                Swal.fire({
+                    title: 'Encomendas',
+                    html: html,  // Insert the entire HTML of the table
+                    showCloseButton: true,
+                    confirmButtonText: 'Fechar',
+                    width: '80%',  // Set modal width to 80% of the screen width (you can adjust this)
+                    maxHeight: '80vh',  // Ensure the modal height doesn't overflow the viewport
+                    overflowY: 'auto'  // Allow vertical scrolling if content overflows
+                });
+            })
+            .catch(error => {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Erro ao carregar encomendas',
+                    text: error.message,
+                });
+            });
+    }
+</script>
+
 {% endblock %}

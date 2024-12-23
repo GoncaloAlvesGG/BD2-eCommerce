@@ -17,9 +17,21 @@ urlpatterns = [
     path('admin/perfil/', views.perfil_admin, name='perfil_admin'), # Perfil do admin
     path('dashboard/', views.admin_dashboard, name='admin_dashboard'),
     path('dashboard/encomendas/', views.dashboard_encomendas, name='dashboard_encomendas'),
+    #Produtos
     path('dashboard/produtos/', views.dashboard_produtos, name='dashboard_produtos'),
+    path('dashboard/produtos/add', views.add_produto, name='add_produto'),
+    path('dashboard/produtos/add_categoria', views.add_categoria, name='add_categoria'),
+    #Clientes
     path('dashboard/clientes/', views.dashboard_clientes, name='dashboard_clientes'),
-    path('dashboard/configuracoes/', views.dashboard_configuracoes, name='dashboard_configuracoes'),
+    path('dashboard/clientes/update', views.update_cliente, name='update_cliente'),
+    path('dashboard/clientes/delete', views.delete_cliente, name='delete_cliente'),
+    path('dashboard/encomendas_cliente/<int:utilizador_id>/', views.ver_encomendas_clientes, name='ver_encomendas'),
+    
+    #Fornecedores
     path('dashboard/fornecedores/', views.dashboard_fornecedores, name='dashboard_fornecedores'),
+    path('dashboard/fornecedores/add', views.add_fornecedor, name='add_fornecedor'),
+    path('dashboard/fornecedores/update', views.update_fornecedor, name='update_fornecedor'),
+    path('dashboard/fornecedores/delete', views.delete_fornecedor, name='delete_fornecedor'),
+    path('dashboard/configuracoes/', views.dashboard_configuracoes, name='dashboard_configuracoes'),
 
 ]

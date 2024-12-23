@@ -1,0 +1,72 @@
+<style>
+    .orders-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .orders-table th,
+    .orders-table td {
+        padding: 10px;
+        text-align: left;
+        border-bottom: 1px solid #ddd;
+    }
+
+    .orders-table th {
+        background-color: #f8f9fa;
+    }
+
+    .orders-table tr:hover {
+        background-color: #f1f1f1;
+    }
+
+    .btn-info {
+        padding: 5px 10px;
+        background-color: #17a2b8;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        font-size: 0.9rem;
+        text-decoration: none;
+    }
+
+    .btn-info:hover {
+        background-color: #138496;
+    }
+</style>
+
+<table class="orders-table">
+    <thead>
+        <tr>
+            <th>#</th>
+            <th>Data</th>
+            <th>Itens</th>
+            <th>Total</th>
+            <th>Estado</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for encomenda in encomendas %}
+        <tr>
+            <td>{{ encomenda.encomenda_id }}</td>
+            <td>{{ encomenda.data_encomenda|date:"d/m/Y" }}</td>
+            <td>
+                {% for item in encomenda.produto %}
+                {{ item.nome }}{% if not forloop.last %}, {% endif %}
+                {% endfor %}
+            </td>
+            <td>
+                €{{ encomenda.preco_total }}
+            </td>
+            <td>{{ encomenda.estado }}</td>
+            <td>
+                <a href="{% url 'encomenda' encomenda.encomenda_id %}" class="btn btn-info">Ver Detalhes</a>
+            </td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="6">Nenhuma encomenda encontrada.</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>

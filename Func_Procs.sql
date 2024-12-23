@@ -714,6 +714,35 @@ $$ LANGUAGE plpgsql;
 
 SELECT sp_Utilizador_UpdateIsAdmin(5, TRUE);
 
+--Ultimos 4 produtos adicionados
+CREATE OR REPLACE FUNCTION ultimos_produtos_adicionados()
+RETURNS TABLE (
+    produto_id INT,
+    nome VARCHAR,
+    descricao TEXT,
+    preco DECIMAL(10, 2),
+    categoria_id INT,
+    quantidade_em_stock INT,
+    data_adicao TIMESTAMP
+) AS $$
+BEGIN
+    RETURN QUERY
+    SELECT 
+        p.produto_id, 
+        p.nome, 
+        p.descricao, 
+        p.preco, 
+        p.categoria_id, 
+        p.quantidade_em_stock, 
+        p.data_adicao
+    FROM produto p
+    ORDER BY data_adicao DESC
+    LIMIT 4;
+END;
+$$ LANGUAGE plpgsql;
+
+SELECT * FROM ultimos_produtos_adicionados();
+
 
 --Views
 --View Encomendas de um user
@@ -721,6 +750,7 @@ CREATE VIEW vw_encomendas_utilizador AS
 SELECT 
     e.encomenda_id,
     e.utilizador_id,
+	u.nome as nome_user,
     e.morada,
     e.data_encomenda,
     e.estado,
@@ -735,11 +765,48 @@ FROM
 JOIN 
     itens_encomenda i ON e.encomenda_id = i.encomenda_id
 JOIN 
-    produto p ON i.produto_id = p.produto_id;
+    produto p ON i.produto_id = p.produto_id
+JOIN 
+    utilizador u ON e.utilizador_id = u.utilizador_id; 
 	
 SELECT * 
 FROM vw_encomendas_utilizador
-WHERE utilizador_id = 4;
+WHERE encomenda_id = 6;
+
+--View Utilizador
+CREATE VIEW view_utilizador AS
+SELECT 
+    utilizador_id,
+    nome,
+    email,
+    isAdmin,
+    data_registo
+FROM utilizador;
+
+--View Produto
+CREATE VIEW view_produto AS
+SELECT 
+    p.produto_id,
+    p.nome AS produto_nome,
+    p.descricao,
+    p.preco,
+    p.quantidade_em_stock,
+    p.data_adicao,
+    p.categoria_id,
+    c.nome AS categoria_nome
+FROM 
+    produto p
+JOIN 
+    categoria c ON p.categoria_id = c.categoria_id;
+
+--View Fornecedor	
+CREATE VIEW view_fornecedor AS
+SELECT 
+    fornecedor_id,
+    nome,
+    contato,
+    endereco
+FROM fornecedor;
 
 --Trigger
 --Trigger quando uma venda é efetuada

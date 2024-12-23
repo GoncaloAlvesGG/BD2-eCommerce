@@ -48,16 +48,41 @@
         padding: 8px 12px;
         border-radius: 5px;
         text-decoration: none;
+        font-size: 14px;
     }
 
     .btn:hover {
         background-color: #0056b3;
     }
+
+    .btn-small {
+        background-color: #007bff;
+        color: white;
+        padding: 5px 10px;
+        border-radius: 3px;
+        text-decoration: none;
+        font-size: 12px;
+    }
+
+    .btn-small:hover {
+        background-color: #0056b3;
+    }
+
+    .btn-danger {
+        background-color: #dc3545;
+    }
+
+    .btn-danger:hover {
+        background-color: #c82333;
+    }
 </style>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <div class="products-container">
     <div class="header">
         <h2>Todos os Fornecedores</h2>
+        <button class="btn" onclick="adicionarFornecedor()">Adicionar Fornecedor</button>
     </div>
     <table class="products-table">
         <thead>
@@ -66,6 +91,7 @@
                 <th>Nome</th>
                 <th>Contato</th>
                 <th>Endereço</th>
+                <th>Ações</th>
             </tr>
         </thead>
         <tbody>
@@ -75,13 +101,170 @@
                 <td>{{ fornecedor.nome }}</td>
                 <td>{{ fornecedor.contato|default:"Sem contato" }}</td>
                 <td>{{ fornecedor.endereco|default:"Sem endereço" }}</td>
+                <td>
+                    <a class="btn-small">Ver Produtos</a>
+                    <a class="btn-small"
+                        onclick="alterarFornecedor('{{ fornecedor.fornecedor_id }}', '{{ fornecedor.nome }}', '{{ fornecedor.contato }}', '{{ fornecedor.endereco }}')">Alterar</a>
+                    <a class="btn-small btn-danger"
+                        onclick="excluirFornecedor('{{ fornecedor.fornecedor_id }}')">Excluir</a>
+
+                </td>
             </tr>
             {% empty %}
             <tr>
-                <td colspan="4">Nenhum fornecedor encontrado.</td>
+                <td colspan="5">Nenhum fornecedor encontrado.</td>
             </tr>
             {% endfor %}
         </tbody>
     </table>
 </div>
+
+<script>
+    function adicionarFornecedor() {
+        Swal.fire({
+            title: 'Adicionar Fornecedor',
+            html: `
+                <form id="form-adicionar-fornecedor">
+                    <div style="margin-bottom: 10px;">
+                        <label for="nome">Nome:</label><br>
+                        <input type="text" id="nome" name="nome" class="swal2-input" required>
+                    </div>
+                    <div style="margin-bottom: 10px;">
+                        <label for="contacto">Contacto:</label><br>
+                        <input type="text" id="contacto" name="contacto" class="swal2-input" required>
+                    </div>
+                    <div style="margin-bottom: 10px;">
+                        <label for="endereco">Endereço:</label><br>
+                        <input type="text" id="endereco" name="endereco" class="swal2-input" required>
+                    </div>
+                </form>
+            `,
+            confirmButtonText: 'Adicionar',
+            preConfirm: () => {
+                const form = document.getElementById('form-adicionar-fornecedor');
+                const formData = new FormData(form);
+                return fetch('{% url "add_fornecedor" %}', {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-CSRFToken': '{{ csrf_token }}',
+                    },
+                }).then(response => {
+                    if (!response.ok) {
+                        throw new Error('Falha ao adicionar fornecedor');
+                    }
+                    return response.json();
+                }).catch(error => {
+                    Swal.showValidationMessage(`Erro: ${error}`);
+                });
+            },
+        }).then(result => {
+            if (result.isConfirmed) {
+                Swal.fire('Sucesso', 'Fornecedor adicionado com sucesso!', 'success').then(() => {
+                    location.reload();
+                });
+            }
+        });
+    }
+</script>
+
+<script>
+    function alterarFornecedor(id, nome, contato, endereco) {
+        Swal.fire({
+            title: 'Alterar Fornecedor',
+            html: `
+                <form id="form-alterar-fornecedor">
+                    <div style="margin-bottom: 10px;">
+                        <label for="nome">Nome:</label><br>
+                        <input type="text" id="nome" name="nome" class="swal2-input" value="${nome}" required>
+                    </div>
+                    <div style="margin-bottom: 10px;">
+                        <label for="contacto">Contacto:</label><br>
+                        <input type="text" id="contacto" name="contacto" class="swal2-input" value="${contato}" required>
+                    </div>
+                    <div style="margin-bottom: 10px;">
+                        <label for="endereco">Endereço:</label><br>
+                        <input type="text" id="endereco" name="endereco" class="swal2-input" value="${endereco}" required>
+                    </div>
+                </form>
+            `,
+            confirmButtonText: 'Alterar',
+            preConfirm: () => {
+                const form = document.getElementById('form-alterar-fornecedor');
+                const formData = new FormData(form);
+                formData.append('fornecedor_id', id);
+
+                return fetch('{% url "update_fornecedor" %}', {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-CSRFToken': '{{ csrf_token }}',
+                    },
+                }).then(response => {
+                    if (!response.ok) {
+                        throw new Error('Falha ao alterar fornecedor');
+                    }
+                    return response.json();
+                }).catch(error => {
+                    Swal.showValidationMessage(`Erro: ${error}`);
+                });
+            },
+        }).then(result => {
+            if (result.isConfirmed) {
+                Swal.fire('Sucesso', 'Fornecedor alterado com sucesso!', 'success').then(() => {
+                    location.reload();
+                });
+            }
+        });
+    }
+</script>
+
+<script>
+    function excluirFornecedor(id) {
+        Swal.fire({
+            title: 'Tem a certeza?',
+            text: 'Esta ação não pode ser desfeita.',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#dc3545',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Sim, excluir!',
+            cancelButtonText: 'Cancelar',
+        }).then(result => {
+            if (result.isConfirmed) {
+                const formData = new FormData();
+                formData.append('fornecedor_id', id);
+
+                fetch('{% url "delete_fornecedor" %}', {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-CSRFToken': '{{ csrf_token }}',
+                    },
+                })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Falha ao excluir fornecedor');
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        if (data.success) {
+                            Swal.fire('Excluído!', 'O fornecedor foi excluído com sucesso.', 'success').then(() => {
+                                location.reload();
+                            });
+                        } else {
+                            Swal.fire('Erro!', data.error || 'Falha ao excluir fornecedor.', 'error');
+                        }
+                    })
+                    .catch(error => {
+                        Swal.fire('Erro!', `Erro: ${error.message}`, 'error');
+                    });
+            }
+        });
+    }
+</script>
+
+
+
 {% endblock %}
