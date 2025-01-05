@@ -9,7 +9,10 @@ urlpatterns = [
     path('registo/', views.registo, name='registo'),
     path('index/', views.index, name='index'),  # Página inicial
     path('produto/<int:produto_id>/', views.produto_detalhe, name='produto_detalhe'),  # Detalhe do produto
+
     path('encomenda/<int:encomenda_id>/', views.encomenda, name='encomenda'),
+    path('encomenda/<int:encomenda_id>/pdf/', views.gerar_pdf_encomenda, name='gerar_pdf_encomenda'),
+    
     path('carrinho/', views.carrinho, name='carrinho'),  # Carrinho de compras
     path('checkout/', views.checkout, name='checkout'),  # Finalização da compra
     path('finalizar_compra/', views.finalizar_compra, name='finalizar_compra'),  # Finalização da compra

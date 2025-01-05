@@ -152,6 +152,9 @@
     <div class="resumo">
         <h2>Resumo da Encomenda</h2>
         <p class="total">Total: &euro; {{ encomenda.preco_total }}</p>
+        {% if encomenda.estado != "pendente" %}
+        <a href="{% url 'gerar_pdf_encomenda' encomenda.encomenda_id %}" class="btn btn-primary">Gerar Fatura PDF</a>
+        {% endif %}
         <a href="{% url 'index' %}" class="btn">Voltar à Loja</a>
     </div>
 </div>

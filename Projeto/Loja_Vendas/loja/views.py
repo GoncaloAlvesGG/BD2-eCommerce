@@ -9,8 +9,91 @@ from django.http import Http404, JsonResponse
 from django.contrib import messages
 from collections import defaultdict
 from decimal import Decimal
+from reportlab.lib.pagesizes import letter
+from reportlab.pdfgen import canvas
+from django.http import HttpResponse
+from io import BytesIO
 import json
 import bcrypt
+
+def gerar_pdf_encomenda(request, encomenda_id):
+    encomenda_list = obter_encomenda(encomenda_id)  # Obtenção dos dados da encomenda
+    encomenda = encomenda_list[0] if encomenda_list else None  # Apenas uma encomenda
+
+    # Caso a encomenda não exista
+    if encomenda is None:
+        return HttpResponse("Encomenda não encontrada", status=404)
+
+    # Preparando a resposta HTTP com o tipo de conteúdo PDF
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="fatura_{encomenda["encomenda_id"]}.pdf"'  # Acessando o valor do dicionário
+
+    # Criando o buffer para o PDF
+    buffer = BytesIO()
+    p = canvas.Canvas(buffer, pagesize=letter)
+
+    # Definindo margens
+    margem_esquerda = 50
+    margem_topo = 750
+
+    # Adicionando o nome da empresa no topo
+    p.setFont("Helvetica-Bold", 18)
+    p.drawString(margem_esquerda, margem_topo, "A Minha Loja")
+    p.setFont("Helvetica", 10)
+    p.drawString(margem_esquerda, margem_topo - 20, "Rua do Fundo, Viseu")
+    p.drawString(margem_esquerda, margem_topo - 35, "Telefone: +351 123 456 789 | Email: info@vendas.com")
+    
+    # Adicionando título "Fatura"
+    p.setFont("Helvetica-Bold", 14)
+    p.drawString(400, margem_topo, f"Fatura # {encomenda['encomenda_id']}")
+
+    # Adicionando dados da encomenda
+    p.setFont("Helvetica", 10)
+    p.drawString(50, margem_topo - 70, f"Fatura # {encomenda['encomenda_id']}")
+    p.drawString(50, margem_topo - 85, f"Data: {encomenda['data_encomenda'].strftime('%d/%m/%Y')}")
+    p.drawString(50, margem_topo - 100, f"Cliente: {encomenda['nome_user']}")
+    p.drawString(50, margem_topo - 115, f"Morada: {encomenda['morada']}")
+
+    # Adicionando tabela de produtos
+    margem_topo_produtos = margem_topo - 160
+    p.setFont("Helvetica-Bold", 10)
+    p.drawString(margem_esquerda, margem_topo_produtos, "Produto")
+    p.drawString(250, margem_topo_produtos, "Quantidade")
+    p.drawString(350, margem_topo_produtos, "Preço Unitário")
+    p.drawString(450, margem_topo_produtos, "Preço Total")
+
+    # Linha horizontal
+    p.setLineWidth(0.5)
+    p.line(margem_esquerda, margem_topo_produtos - 5, 550, margem_topo_produtos - 5)
+
+    # Adicionando os itens da encomenda
+    y_position = margem_topo_produtos - 20
+    p.setFont("Helvetica", 10)
+    for item in encomenda['produto']:
+        p.drawString(margem_esquerda, y_position, item['nome'])
+        p.drawString(250, y_position, str(item['quantidade']))
+        p.drawString(350, y_position, f"€{item['preco_unitario']:,.2f}")
+        p.drawString(450, y_position, f"€{item['preco_total']:,.2f}")
+        y_position -= 20
+
+    # Linha horizontal após os produtos
+    p.line(margem_esquerda, y_position, 550, y_position)
+
+    # Total da encomenda
+    p.setFont("Helvetica-Bold", 12)
+    p.drawString(350, y_position - 20, "Total:")
+    p.setFont("Helvetica", 12)
+    preco_total = f"€{encomenda['preco_total']:,.2f}"
+    p.drawString(450, y_position - 20, preco_total)
+
+    # Finalizando o PDF
+    p.showPage()
+    p.save()
+
+    # Retornando o PDF gerado
+    buffer.seek(0)
+    response.write(buffer.read())
+    return response
 
 def produto_detalhe(request, produto_id):
     with connection.cursor() as cursor:
