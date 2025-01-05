@@ -186,6 +186,10 @@
                             <button type="submit" class="btn btn-info">Ver Detalhes</button>
                         </form>
 
+                        {% if encomenda.estado == "pendente" %}
+                        <button class="btn btn-warning" type="button"
+                            onclick="confirmarEnvio('{{ encomenda.encomenda_id }}')">Enviar</button>
+                        {% endif %}
                     </td>
                 </tr>
                 {% empty %}
@@ -199,5 +203,44 @@
         </table>
     </div>
 </div>
+
+<script>
+    function confirmarEnvio(encomendaId) {
+        Swal.fire({
+            title: 'Você tem certeza?',
+            text: 'Esta encomenda será marcada como "Enviada".',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Sim, enviar',
+            cancelButtonText: 'Cancelar'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // Enviar requisição para mudar o estado da encomenda
+                fetch(`/dashboard/encomendas/enviar/${encomendaId}/`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': '{{ csrf_token }}',
+                        'Content-Type': 'application/json',
+                    },
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            Swal.fire('Enviado!', 'A encomenda foi enviada com sucesso!', 'success')
+                                .then(() => {
+                                    location.reload();  // Recarregar a página para atualizar o estado da encomenda
+                                });
+                        } else {
+                            Swal.fire('Erro', 'Ocorreu um erro ao enviar a encomenda.', 'error');
+                        }
+                    })
+                    .catch(error => {
+                        Swal.fire('Erro', 'Erro na requisição: ' + error, 'error');
+                    });
+            }
+        });
+    }
+</script>
+
 
 {% endblock %}

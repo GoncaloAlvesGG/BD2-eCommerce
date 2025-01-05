@@ -9,6 +9,7 @@ from django.http import Http404, JsonResponse
 from django.contrib import messages
 from collections import defaultdict
 from decimal import Decimal
+import json
 import bcrypt
 
 def produto_detalhe(request, produto_id):
@@ -218,7 +219,43 @@ def add_to_cart(request, produto_id):
     request.session.modified = True
     
     # Return the product details in the response
-    return render(request, 'carrinho.html', {'produto': produto_data})
+    return JsonResponse({"success": True})
+
+
+def finalizar_compra(request):
+    if request.method == 'POST':
+        try:
+            # Recuperar dados do utilizador e do carrinho da sessão
+            utilizador_id = request.session.get('utilizador_id')
+            cart = request.session.get('cart', {})
+            
+            if not cart:
+                return JsonResponse({'status': 'error', 'message': 'Carrinho vazio.'}, status=400)
+
+            # Dados do formulário (morada)
+            morada = request.POST.get('morada')
+            estado = 'pendente'  # Estado inicial da encomenda
+
+            # Converter o carrinho no formato esperado
+            itens = [
+                {'produto_id': int(produto_id), 'quantidade': item['quantity']}
+                for produto_id, item in cart.items()
+            ]
+
+            # Chamar a função no banco de dados
+            with connection.cursor() as cursor:
+                cursor.execute("""
+                    SELECT sp_Encomenda_Com_Itens_CREATE(%s, %s, %s, %s);
+                """, [utilizador_id, morada, estado, json.dumps(itens)])
+
+            # Limpar o carrinho após finalizar a compra
+            request.session['cart'] = {}
+
+            return JsonResponse({"success": True})
+        except Exception as e:
+            return JsonResponse({"success": False, "error": "Invalid request"}, status=500)
+    return JsonResponse({"success": False, "error": "Invalid request"}, status=405)
+
 
 def dashboard_configuracoes(request):
     return render(request, 'dashboard_configuracoes.html')
@@ -366,6 +403,18 @@ def delete_cliente(request):
 def ver_encomendas_clientes(request, utilizador_id):
     encomendas = obter_encomendas_utilizador(utilizador_id)  # Function to get orders by user
     return render(request, 'encomendas_table.html', {'encomendas': encomendas})
+
+def enviar_encomenda(request, encomenda_id):
+    if request.method == 'POST':
+
+        try:
+            with connection.cursor() as cursor:
+                cursor.callproc('sp_Encomenda_UPDATE', [encomenda_id, 'enviada'])
+            return JsonResponse({"success": True})
+        except Exception as e:
+            return JsonResponse({"success": False, "error": str(e)}, status=400)
+
+    return JsonResponse({"success": False, "error": "Invalid request"}, status=400)
 
 
 def add_produto(request):

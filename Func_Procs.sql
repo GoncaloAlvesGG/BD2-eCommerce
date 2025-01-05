@@ -855,3 +855,27 @@ SELECT sp_Encomenda_Com_Itens_CREATE(
         {"produto_id": 2, "quantidade": 1}
     ]'::JSON -- itens
 );
+
+--Encomenda passa para enviada, é criada uma fatura automaticamente
+CREATE OR REPLACE FUNCTION criar_fatura()
+RETURNS TRIGGER AS $$
+BEGIN
+    -- Verificar se o novo estado é "enviada"
+    IF NEW.estado = 'enviada' THEN
+        INSERT INTO fatura (encomenda_id, valor_total)
+        VALUES (
+            NEW.encomenda_id,
+            (SELECT SUM(preco_total) 
+             FROM itens_encomenda 
+             WHERE encomenda_id = NEW.encomenda_id)
+        );
+    END IF;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trigger_criar_fatura
+AFTER UPDATE OF estado ON encomenda
+FOR EACH ROW
+WHEN (OLD.estado IS DISTINCT FROM NEW.estado)
+EXECUTE FUNCTION criar_fatura();

@@ -8,49 +8,123 @@
         margin: 0;
         overflow-y: auto;
     }
+
     .container {
         display: flex;
         flex-direction: column;
         align-items: center;
         width: 100%;
-        max-width: 600px;
+        max-width: 800px;
         box-sizing: border-box;
     }
+
     .content {
         display: flex;
         flex-direction: column;
         align-items: center;
+        width: 100%;
     }
+
     .content h1 {
         margin-top: -150px;
     }
+
     .form {
+        display: flex;
+        flex-direction: row;
+        flex-wrap: wrap;
+        gap: 20px;
         width: 100%;
     }
+
+    .form .form-group {
+        width: 48%;
+        /* Definindo o tamanho das colunas */
+    }
+
     .form .btn {
-        display: block; /* Faz o botão ocupar uma linha inteira */
-        margin: 20px auto 0; /* Centraliza horizontalmente e adiciona espaço no topo */
+        display: block;
+        /* Faz o botão ocupar uma linha inteira */
+        margin: 20px auto 0;
+        /* Centraliza horizontalmente e adiciona espaço no topo */
     }
 </style>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <div class="container">
     <div class="content">
         <h1 class="text-center">Finalizar Compra</h1>
+
+        <!-- Formulário de Dados de Envio e Pagamento -->
         <form class="form mt-4">
-            <div class="mb-3">
-                <label for="nome" class="form-label">Nome Completo</label>
-                <input type="text" class="form-control" id="nome" placeholder="Seu nome">
+            <!-- Coluna 1 - Dados de Envio -->
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="morada" class="form-label">Morada Completa</label>
+                <input type="text" class="form-control" id="morada" placeholder="Morada Completa">
             </div>
-            <div class="mb-3">
-                <label for="endereco" class="form-label">Endereço</label>
-                <input type="text" class="form-control" id="endereco" placeholder="Endereço completo">
-            </div>
-            <div class="mb-3">
+
+
+            <!-- Coluna 2 - Dados de Pagamento -->
+            <div class="form-group">
                 <label for="cartao" class="form-label">Número do Cartão</label>
                 <input type="text" class="form-control" id="cartao" placeholder="XXXX-XXXX-XXXX-XXXX">
             </div>
-            <button type="submit" class="btn btn-success btn-lg">Finalizar Compra</button>
+
+            <div class="form-group">
+                <label for="validade" class="form-label">Data de Validade</label>
+                <input type="month" class="form-control" id="validade">
+            </div>
+
+            <div class="form-group">
+                <label for="cvv" class="form-label">CVV</label>
+                <input type="text" class="form-control" id="cvv" placeholder="XXX">
+            </div>
+
+            <!-- Botão de Finalizar Compra -->
+            <button type="button" onclick="finalizarCompra()" class="btn btn-success btn-lg">
+                Finalizar Compra
+            </button>
         </form>
     </div>
 </div>
+
+<script>
+    function finalizarCompra() {
+        const morada = document.getElementById('morada').value; // Obter a morada inserida
+
+        // Verificar se a morada está preenchida
+        if (!morada) {
+            Swal.fire('Erro', 'Por favor, preencha a morada.', 'error');
+            return;
+        }
+
+        // Fazer a requisição para enviar a morada
+        fetch('/finalizar_compra/', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: `morada=${encodeURIComponent(morada)}`
+        })
+            .then(response => {
+                if (!response.ok) throw new Error('Erro ao finalizar a compra');
+                return response.json();
+            })
+            .then(data => {
+                console.log(data);
+                if (data.success) {
+                    Swal.fire('Sucesso!', 'Compra finalizada com sucesso!', 'success').then(() => {
+                        window.location.href = '/perfil/';
+                    });
+                }
+            })
+            .catch(error => {
+                Swal.fire('Erro', `Não foi possível finalizar a compra: ${error}`, 'error');
+            });
+    }
+</script>
+
 {% endblock %}

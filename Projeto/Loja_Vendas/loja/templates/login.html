@@ -123,7 +123,11 @@
             <h1>Entrar</h1>
             <p>Entre na sua conta para continuar.</p>
 
-            <!-- Formulário de Login com POST e CSRF token -->
+            {% if login_error %}
+            <div class="alert alert-danger" role="alert">
+                {{ login_error }}
+            </div>
+            {% endif %}
             <form method="POST" action="/login/">
                 {% csrf_token %}
                 <div class="mb-3">

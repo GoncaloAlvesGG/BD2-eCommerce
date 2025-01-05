@@ -12,11 +12,15 @@ urlpatterns = [
     path('encomenda/<int:encomenda_id>/', views.encomenda, name='encomenda'),
     path('carrinho/', views.carrinho, name='carrinho'),  # Carrinho de compras
     path('checkout/', views.checkout, name='checkout'),  # Finalização da compra
+    path('finalizar_compra/', views.finalizar_compra, name='finalizar_compra'),  # Finalização da compra
     path('perfil/', views.perfil, name='perfil'), # Perfil do usuário
     path('recuperar_senha/', views.recuperar_senha, name='recuperar_senha'),  # Recuperar senha
     path('admin/perfil/', views.perfil_admin, name='perfil_admin'), # Perfil do admin
+
     path('dashboard/', views.admin_dashboard, name='admin_dashboard'),
     path('dashboard/encomendas/', views.dashboard_encomendas, name='dashboard_encomendas'),
+    path('dashboard/encomendas/enviar/<int:encomenda_id>/', views.enviar_encomenda, name='enviar_encomenda'),
+
     path('add_to_cart/<int:produto_id>/', views.add_to_cart, name='add_to_cart'),
     #Produtos
     path('dashboard/produtos/', views.dashboard_produtos, name='dashboard_produtos'),
