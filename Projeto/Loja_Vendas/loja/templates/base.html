@@ -253,12 +253,7 @@
             color: #e76f51;
         }
 
-        .dropdown-menu {
-            width: 100%;
-            padding: 0;
-            margin: 15px 0;
-        }
-
+        /* Estilo do dropdown-toggle */
         .dropdown-toggle {
             color: white;
             text-decoration: none;
@@ -270,17 +265,21 @@
             display: block;
             cursor: pointer;
             transition: background-color 0.3s ease;
+            margin: 15px 0;
+            /* Adiciona margem para espaçamento */
         }
 
         .dropdown-toggle:hover {
             background-color: #e76f51;
         }
 
-
+        /* Estilo do dropdown-items */
         .dropdown-items {
             display: none;
             width: 100%;
             padding-left: 20px;
+            position: relative;
+            left: 30px;
         }
 
         .dropdown-items a {
@@ -294,11 +293,11 @@
 
         .dropdown-items a:hover {
             color: white;
-            background-color: #555;
             padding-left: 30px;
         }
 
-        .dropdown-menu.active .dropdown-items {
+        /* Mostrar dropdown-items quando ativo */
+        .dropdown-items.active {
             display: block;
         }
     </style>
@@ -356,17 +355,43 @@
     </footer>
 
     <script>
+        // Função para alternar o menu lateral
         function toggleMenu() {
             const nav = document.getElementById('sideMenu');
             nav.classList.toggle('active');
         }
 
-        function toggleDropdown(element, event) { // Adicione o parâmetro event
+        // Função para alternar o dropdown
+        function toggleDropdown(element, event) {
             event.stopPropagation(); // Impede a propagação do evento
-            const dropdownMenu = element.parentElement;
-            dropdownMenu.classList.toggle('active');
+            const dropdownItems = element.nextElementSibling; // Seleciona o dropdown-items
+            dropdownItems.classList.toggle('active');
         }
 
+        // Fechar o menu lateral ao clicar fora
+        document.addEventListener('click', (e) => {
+            const nav = document.getElementById('sideMenu');
+            const menuIcon = document.querySelector('.menu-icon');
+
+            // Fecha o menu lateral se o clique não for no ícone do menu ou no próprio menu
+            if (!nav.contains(e.target) && !menuIcon.contains(e.target)) {
+                nav.classList.remove('active');
+            }
+        });
+
+        // Fechar dropdowns ao clicar fora
+        document.addEventListener('click', (e) => {
+            const dropdownMenus = document.querySelectorAll('.dropdown-menu');
+
+            dropdownMenus.forEach(menu => {
+                // Fecha o dropdown se o clique não for no dropdown-toggle ou no dropdown-items
+                if (!menu.contains(e.target)) {
+                    menu.classList.remove('active');
+                }
+            });
+        });
+
+        // Função de pesquisa
         function searchAlert() {
             Swal.fire({
                 title: 'Pesquisar',
@@ -381,7 +406,7 @@
                         Swal.showValidationMessage('Por favor, insira um termo de pesquisa');
                     } else {
                         console.log('Termo pesquisado:', searchTerm);
-                        // Aqui você pode implementar a lógica de redirecionar para a página de resultados
+                        // Redireciona para a página de resultados
                         window.location.href = `/procurar/?nome=${encodeURIComponent(searchTerm)}`;
                     }
                 },
