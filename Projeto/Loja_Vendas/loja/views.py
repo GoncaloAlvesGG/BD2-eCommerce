@@ -16,85 +16,6 @@ from io import BytesIO
 import json
 import bcrypt
 
-def gerar_pdf_encomenda(request, encomenda_id):
-    encomenda_list = obter_encomenda(encomenda_id)  # Obtenção dos dados da encomenda
-    encomenda = encomenda_list[0] if encomenda_list else None  # Apenas uma encomenda
-
-    # Caso a encomenda não exista
-    if encomenda is None:
-        return HttpResponse("Encomenda não encontrada", status=404)
-
-    # Preparando a resposta HTTP com o tipo de conteúdo PDF
-    response = HttpResponse(content_type='application/pdf')
-    response['Content-Disposition'] = f'attachment; filename="fatura_{encomenda["encomenda_id"]}.pdf"'  # Acessando o valor do dicionário
-
-    # Criando o buffer para o PDF
-    buffer = BytesIO()
-    p = canvas.Canvas(buffer, pagesize=letter)
-
-    # Definindo margens
-    margem_esquerda = 50
-    margem_topo = 750
-
-    # Adicionando o nome da empresa no topo
-    p.setFont("Helvetica-Bold", 18)
-    p.drawString(margem_esquerda, margem_topo, "A Minha Loja")
-    p.setFont("Helvetica", 10)
-    p.drawString(margem_esquerda, margem_topo - 20, "Rua do Fundo, Viseu")
-    p.drawString(margem_esquerda, margem_topo - 35, "Telefone: +351 123 456 789 | Email: info@vendas.com")
-    
-    # Adicionando título "Fatura"
-    p.setFont("Helvetica-Bold", 14)
-    p.drawString(400, margem_topo, f"Fatura # {encomenda['encomenda_id']}")
-
-    # Adicionando dados da encomenda
-    p.setFont("Helvetica", 10)
-    p.drawString(50, margem_topo - 70, f"Fatura # {encomenda['encomenda_id']}")
-    p.drawString(50, margem_topo - 85, f"Data: {encomenda['data_encomenda'].strftime('%d/%m/%Y')}")
-    p.drawString(50, margem_topo - 100, f"Cliente: {encomenda['nome_user']}")
-    p.drawString(50, margem_topo - 115, f"Morada: {encomenda['morada']}")
-
-    # Adicionando tabela de produtos
-    margem_topo_produtos = margem_topo - 160
-    p.setFont("Helvetica-Bold", 10)
-    p.drawString(margem_esquerda, margem_topo_produtos, "Produto")
-    p.drawString(250, margem_topo_produtos, "Quantidade")
-    p.drawString(350, margem_topo_produtos, "Preço Unitário")
-    p.drawString(450, margem_topo_produtos, "Preço Total")
-
-    # Linha horizontal
-    p.setLineWidth(0.5)
-    p.line(margem_esquerda, margem_topo_produtos - 5, 550, margem_topo_produtos - 5)
-
-    # Adicionando os itens da encomenda
-    y_position = margem_topo_produtos - 20
-    p.setFont("Helvetica", 10)
-    for item in encomenda['produto']:
-        p.drawString(margem_esquerda, y_position, item['nome'])
-        p.drawString(250, y_position, str(item['quantidade']))
-        p.drawString(350, y_position, f"€{item['preco_unitario']:,.2f}")
-        p.drawString(450, y_position, f"€{item['preco_total']:,.2f}")
-        y_position -= 20
-
-    # Linha horizontal após os produtos
-    p.line(margem_esquerda, y_position, 550, y_position)
-
-    # Total da encomenda
-    p.setFont("Helvetica-Bold", 12)
-    p.drawString(350, y_position - 20, "Total:")
-    p.setFont("Helvetica", 12)
-    preco_total = f"€{encomenda['preco_total']:,.2f}"
-    p.drawString(450, y_position - 20, preco_total)
-
-    # Finalizando o PDF
-    p.showPage()
-    p.save()
-
-    # Retornando o PDF gerado
-    buffer.seek(0)
-    response.write(buffer.read())
-    return response
-
 def produto_detalhe(request, produto_id):
     with connection.cursor() as cursor:
         cursor.execute("SELECT * FROM sp_Produto_READ(%s)", [produto_id])
@@ -146,10 +67,13 @@ def login(request):
         email = request.POST['email']
         password = request.POST['password']
 
+
         # Chamar a função para obter os dados do utilizador
         with connection.cursor() as cursor:
             cursor.callproc('VerificarLogin', [email])
             result = cursor.fetchone()
+
+        categorias = get_all_categories()
 
         if result is None:
             # Email não encontrado
@@ -165,6 +89,7 @@ def login(request):
             request.session['nome'] = nome
             request.session['email'] = email
             request.session['is_admin'] = is_admin
+            request.session['categorias'] = categorias
             messages.success(request, f"Bem-vindo(a), {nome}!")
             return redirect('index')
         else:
@@ -181,7 +106,21 @@ def index(request):
     produtos = produtos_4recentes()
     return render(request, 'index.html', {'produtos': produtos})
 
+def procurar_produto(request):
+    titulo = 'Resultados da sua pesquisa'
+    texto = request.GET['nome']
+    produtos = procurar_produto_nome(texto)
+    return render(request, 'mostrar_produtos.html', {'produtos': produtos, "titulo": titulo})
 
+def mostrar_todos_produtos(request):
+    titulo = 'Todos os nossos produtos'
+    produtos = get_all_produtos()
+    return render(request, 'mostrar_produtos.html', {'produtos': produtos, "titulo": titulo})
+
+def produtos_categoria(request, categoria_id):
+    titulo = 'Produtos da categoria:'
+    produtos = obter_produtos_categoria(categoria_id)
+    return render(request, 'mostrar_produtos.html', {'produtos': produtos, "titulo": titulo})
 
 def checkout(request):
     # Página de checkout (vazia por enquanto)
@@ -354,17 +293,38 @@ def dashboard_fornecedores(request):
 def recuperar_senha(request):
     return render(request, 'recuperar_pass.html')
 
-def perfil_admin(request):
-    admin_info = {
-        'nome': 'Admin Nome',
-        'email': 'admin@example.com',
-        'data_registro': '01/01/2023'
-    }
-    return render(request, 'perfil_admin.html', {'admin': admin_info})
-
 def produtos_4recentes():
     with connection.cursor() as cursor:
         cursor.execute("SELECT * FROM ultimos_produtos_adicionados()")
+        colunas = [col[0] for col in cursor.description]
+        resultados = [dict(zip(colunas, row)) for row in cursor.fetchall()]
+    return resultados
+
+def get_all_produtos():
+    with connection.cursor() as cursor:
+        cursor.execute("SELECT * FROM get_all_produtos()")
+        colunas = [col[0] for col in cursor.description]
+        resultados = [dict(zip(colunas, row)) for row in cursor.fetchall()]
+    return resultados
+
+def get_all_categories():
+    with connection.cursor() as cursor:
+        cursor.execute("SELECT * FROM get_all_categories()")
+        colunas = [col[0] for col in cursor.description]
+        resultados = [dict(zip(colunas, row)) for row in cursor.fetchall()]
+    return resultados
+
+def obter_produtos_categoria(id):
+    with connection.cursor() as cursor:
+        cursor.execute("SELECT * FROM obter_produtos_categoria(%s)", [id])
+        colunas = [col[0] for col in cursor.description]
+        resultados = [dict(zip(colunas, row)) for row in cursor.fetchall()]
+    return resultados
+
+
+def procurar_produto_nome(texto):
+    with connection.cursor() as cursor:
+        cursor.execute("SELECT * FROM procurar_produto_por_nome(%s)", [texto])
         colunas = [col[0] for col in cursor.description]
         resultados = [dict(zip(colunas, row)) for row in cursor.fetchall()]
     return resultados
@@ -635,3 +595,81 @@ def obter_encomenda(encomenda_id):
     
     return data
 
+def gerar_pdf_encomenda(request, encomenda_id):
+    encomenda_list = obter_encomenda(encomenda_id)  # Obtenção dos dados da encomenda
+    encomenda = encomenda_list[0] if encomenda_list else None  # Apenas uma encomenda
+
+    # Caso a encomenda não exista
+    if encomenda is None:
+        return HttpResponse("Encomenda não encontrada", status=404)
+
+    # Preparando a resposta HTTP com o tipo de conteúdo PDF
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="fatura_{encomenda["encomenda_id"]}.pdf"'  # Acessando o valor do dicionário
+
+    # Criando o buffer para o PDF
+    buffer = BytesIO()
+    p = canvas.Canvas(buffer, pagesize=letter)
+
+    # Definindo margens
+    margem_esquerda = 50
+    margem_topo = 750
+
+    # Adicionando o nome da empresa no topo
+    p.setFont("Helvetica-Bold", 18)
+    p.drawString(margem_esquerda, margem_topo, "A Minha Loja")
+    p.setFont("Helvetica", 10)
+    p.drawString(margem_esquerda, margem_topo - 20, "Rua do Fundo, Viseu")
+    p.drawString(margem_esquerda, margem_topo - 35, "Telefone: +351 123 456 789 | Email: info@vendas.com")
+    
+    # Adicionando título "Fatura"
+    p.setFont("Helvetica-Bold", 14)
+    p.drawString(400, margem_topo, f"Fatura # {encomenda['encomenda_id']}")
+
+    # Adicionando dados da encomenda
+    p.setFont("Helvetica", 10)
+    p.drawString(50, margem_topo - 70, f"Fatura # {encomenda['encomenda_id']}")
+    p.drawString(50, margem_topo - 85, f"Data: {encomenda['data_encomenda'].strftime('%d/%m/%Y')}")
+    p.drawString(50, margem_topo - 100, f"Cliente: {encomenda['nome_user']}")
+    p.drawString(50, margem_topo - 115, f"Morada: {encomenda['morada']}")
+
+    # Adicionando tabela de produtos
+    margem_topo_produtos = margem_topo - 160
+    p.setFont("Helvetica-Bold", 10)
+    p.drawString(margem_esquerda, margem_topo_produtos, "Produto")
+    p.drawString(250, margem_topo_produtos, "Quantidade")
+    p.drawString(350, margem_topo_produtos, "Preço Unitário")
+    p.drawString(450, margem_topo_produtos, "Preço Total")
+
+    # Linha horizontal
+    p.setLineWidth(0.5)
+    p.line(margem_esquerda, margem_topo_produtos - 5, 550, margem_topo_produtos - 5)
+
+    # Adicionando os itens da encomenda
+    y_position = margem_topo_produtos - 20
+    p.setFont("Helvetica", 10)
+    for item in encomenda['produto']:
+        p.drawString(margem_esquerda, y_position, item['nome'])
+        p.drawString(250, y_position, str(item['quantidade']))
+        p.drawString(350, y_position, f"€{item['preco_unitario']:,.2f}")
+        p.drawString(450, y_position, f"€{item['preco_total']:,.2f}")
+        y_position -= 20
+
+    # Linha horizontal após os produtos
+    p.line(margem_esquerda, y_position, 550, y_position)
+
+    # Total da encomenda
+    p.setFont("Helvetica-Bold", 12)
+    p.drawString(350, y_position - 20, "Total:")
+    p.setFont("Helvetica", 12)
+    preco_total = f"€{encomenda['preco_total']:,.2f}"
+    p.drawString(450, y_position - 20, preco_total)
+
+    # Finalizando o PDF
+    p.showPage()
+    p.save()
+
+    # Retornando o PDF gerado
+    buffer.seek(0)
+    response.write(buffer.read())
+    return response

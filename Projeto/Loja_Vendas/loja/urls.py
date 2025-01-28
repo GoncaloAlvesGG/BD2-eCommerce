@@ -9,6 +9,9 @@ urlpatterns = [
     path('registo/', views.registo, name='registo'),
     path('index/', views.index, name='index'),  # Página inicial
     path('produto/<int:produto_id>/', views.produto_detalhe, name='produto_detalhe'),  # Detalhe do produto
+    path('procurar/', views.procurar_produto, name='procurar_produto'),
+    path('loja/', views.mostrar_todos_produtos, name='loja'),
+    path('loja/categoria/<int:categoria_id>/', views.produtos_categoria, name='loja_categoria'),
 
     path('encomenda/<int:encomenda_id>/', views.encomenda, name='encomenda'),
     path('encomenda/<int:encomenda_id>/pdf/', views.gerar_pdf_encomenda, name='gerar_pdf_encomenda'),
@@ -18,7 +21,6 @@ urlpatterns = [
     path('finalizar_compra/', views.finalizar_compra, name='finalizar_compra'),  # Finalização da compra
     path('perfil/', views.perfil, name='perfil'), # Perfil do usuário
     path('recuperar_senha/', views.recuperar_senha, name='recuperar_senha'),  # Recuperar senha
-    path('admin/perfil/', views.perfil_admin, name='perfil_admin'), # Perfil do admin
 
     path('dashboard/', views.admin_dashboard, name='admin_dashboard'),
     path('dashboard/encomendas/', views.dashboard_encomendas, name='dashboard_encomendas'),

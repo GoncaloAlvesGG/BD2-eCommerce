@@ -64,6 +64,7 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
                 'loja.context_processors.user_info',
+                'loja.context_processors.categorias',
             ],
         },
     },
@@ -78,10 +79,10 @@ WSGI_APPLICATION = 'Loja_Vendas.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'bd2_2zor',
-        'USER': 'bd2_2zor_user',
-        'PASSWORD': 'XEwjUXxV9tLOj5LoPfMbF2YXEHbCmmCX',
-        'HOST': 'dpg-ctktad5umphs73d5uhmg-a.frankfurt-postgres.render.com',
+        'NAME': 'postgres',
+        'USER': 'postgres',
+        'PASSWORD': '9A*LUQY8x2$pZVB',
+        'HOST': 'db.ttwbblpzbzfueggxdilv.supabase.co',
         'PORT': '5432',
     }
 }

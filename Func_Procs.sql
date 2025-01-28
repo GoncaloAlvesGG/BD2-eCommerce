@@ -641,6 +641,104 @@ $$ LANGUAGE plpgsql;
 
 --FIM CRUD
 
+--Alterar estado encomenda
+CREATE OR REPLACE FUNCTION sp_Encomenda_UPDATE(
+    p_encomenda_id INT,
+    p_estado VARCHAR
+) RETURNS VOID AS $$
+BEGIN
+    -- Tenta realizar a atualização
+    UPDATE encomenda
+    SET estado = p_estado
+    WHERE encomenda_id = p_encomenda_id;
+
+    -- Verifica se nenhuma linha foi afetada (nenhuma encomenda com esse id foi encontrada)
+    IF NOT FOUND THEN
+        RAISE EXCEPTION 'Encomenda com ID % não encontrada.', p_encomenda_id;
+    END IF;
+
+EXCEPTION
+    WHEN OTHERS THEN
+        RAISE EXCEPTION 'Erro na atualização da encomenda: %', SQLERRM;
+END;
+$$ LANGUAGE plpgsql;
+
+
+--Filtrar por categoria
+CREATE OR REPLACE PROCEDURE obter_produtos_por_categoria(categoria_id INT)
+LANGUAGE plpgsql
+AS $$
+DECLARE
+    rec RECORD;
+BEGIN
+    RAISE NOTICE 'Produtos da categoria com ID: %', categoria_id;
+    
+    FOR rec IN
+        SELECT p.produto_id, p.nome, p.descricao, p.preco, p.quantidade_em_stock, p.data_adicao
+        FROM produto p
+        WHERE p.categoria_id = categoria_id
+    LOOP
+        RAISE NOTICE 'Produto ID: %, Nome: %, Preço: %', rec.produto_id, rec.nome, rec.preco;
+    END LOOP;
+END;
+$$;
+
+--Procura produto por nome
+CREATE OR REPLACE FUNCTION procurar_produto_por_nome(produto_nome VARCHAR)
+RETURNS TABLE (
+    produto_id INT,
+    nome VARCHAR,
+    descricao TEXT,
+    preco DECIMAL(10, 2),
+    quantidade_em_stock INT,
+    data_adicao TIMESTAMP
+) 
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    RETURN QUERY
+    SELECT 
+        p.produto_id, 
+        p.nome, 
+        p.descricao, 
+        p.preco, 
+        p.quantidade_em_stock, 
+        p.data_adicao
+    FROM 
+        produto p
+    WHERE 
+        p.nome ILIKE '%' || produto_nome || '%';
+END;
+$$;
+
+SELECT * FROM procurar_produto_por_nome('XPTO');
+
+--Retornar todos os produtos
+CREATE OR REPLACE FUNCTION get_all_produtos()
+RETURNS TABLE (
+    produto_id INT,
+    nome VARCHAR,
+    descricao TEXT,
+    preco DECIMAL(10, 2),
+    quantidade_em_stock INT,
+    data_adicao TIMESTAMP
+) 
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    RETURN QUERY
+    SELECT 
+        p.produto_id, 
+        p.nome, 
+        p.descricao, 
+        p.preco, 
+        p.quantidade_em_stock, 
+        p.data_adicao
+    FROM 
+        produto p;
+END;
+$$;
+
 --Inserção Encomenda com vários produtos (basicamente quando o utilizador acaba o seu pedido)
 CREATE OR REPLACE FUNCTION sp_Encomenda_Com_Itens_CREATE(
     p_utilizador_id INT,
