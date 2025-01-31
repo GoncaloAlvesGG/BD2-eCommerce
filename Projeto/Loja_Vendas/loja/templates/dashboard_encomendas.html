@@ -146,12 +146,19 @@
 
 <!-- Seção de Produtos -->
 <div class="orders-container">
-
     <div class="header">
         <h2>Todas as Encomendas</h2>
+        <button class="btn btn-primary" onclick="mostrarFiltro()">Filtrar por Data</button>
         <a class="btn btn-primary" onclick="exportarRelatorio()">Exportar Relatório</a>
+    </div>
 
-
+    <div id="filtro-container" style="display: none;">
+        <label for="data-inicio">Data de Início:</label>
+        <input type="date" id="data-inicio">
+        <label for="data-fim">Data de Fim:</label>
+        <input type="date" id="data-fim">
+        <button class="btn btn-primary" onclick="filtrarEncomendas()">Filtrar</button>
+        <button class="btn btn-secondary" onclick="fecharFiltro()">Cancelar</button>
     </div>
     <div class="orders-table-container" id="ordersTable">
         <table class="orders-table">
@@ -164,7 +171,6 @@
                     <th>Total</th>
                     <th>Estado</th>
                     <th>Ações</th>
-                    <th></th>
                 </tr>
             </thead>
             <tbody>
@@ -272,6 +278,26 @@
                 window.location.href = `/exportar-relatorio/?data_inicio=${dataInicio}&data_fim=${dataFim}`;
             }
         });
+    }
+
+    function mostrarFiltro() {
+        document.getElementById('filtro-container').style.display = 'block';
+    }
+
+    function fecharFiltro() {
+        document.getElementById('filtro-container').style.display = 'none';
+    }
+
+    function filtrarEncomendas() {
+        const dataInicio = document.getElementById('data-inicio').value;
+        const dataFim = document.getElementById('data-fim').value;
+
+        if (!dataInicio || !dataFim) {
+            Swal.fire('Erro', 'Por favor, preencha ambas as datas.', 'error');
+            return;
+        }
+
+        window.location.href = `/dashboard/encomendas/filtrar/?data_inicio=${dataInicio}&data_fim=${dataFim}`;
     }
 
 </script>

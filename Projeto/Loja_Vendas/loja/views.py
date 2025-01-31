@@ -119,13 +119,29 @@ def procurar_produto(request):
     return render(request, 'mostrar_produtos.html', {'produtos': produtos, "titulo": titulo})
 
 def mostrar_todos_produtos(request):
-    titulo = 'Todos os nossos produtos'
+    titulo = 'todos'
     produtos = get_all_produtos()
     return render(request, 'mostrar_produtos.html', {'produtos': produtos, "titulo": titulo})
 
 def produtos_categoria(request, categoria_id):
     titulo = 'Produtos da categoria:'
     produtos = obter_produtos_categoria(categoria_id)
+    with connection.cursor() as cursor:
+        # Call the stored function sp_Produto_READ with produto_id
+        cursor.execute("SELECT * FROM sp_Categoria_READ(%s);", [categoria_id])
+        
+        # Fetch the result (this function returns a table, so fetchone is appropriate for a single product)
+        result = cursor.fetchone()
+        
+        # If result is None, no product was found
+        if result:
+            categoria_data = {
+                'categoria_id': result[0],
+                'nome': result[1],
+            }
+            titulo = "Produtos da categoria: " + categoria_data['nome']
+        else:
+            return None
     return render(request, 'mostrar_produtos.html', {'produtos': produtos, "titulo": titulo})
 
 def checkout(request):
@@ -156,6 +172,12 @@ def perfil(request):
 
 def dashboard_encomendas(request):
     encomendas = obter_encomendas()
+    return render(request, 'dashboard_encomendas.html', {'encomendas': encomendas})
+
+def filtrar_encomendas(request):
+    data_inicio = request.GET.get('data_inicio')
+    data_fim = request.GET.get('data_fim')
+    encomendas = obter_encomendas_por_data(data_inicio, data_fim)
     return render(request, 'dashboard_encomendas.html', {'encomendas': encomendas})
 
 def dashboard_produtos(request):
@@ -620,6 +642,59 @@ def update_cliente(request):
             return JsonResponse({"success": False, "error": str(e)}, status=400)
 
     return JsonResponse({"success": False, "error": "Invalid request"}, status=400)
+
+from datetime import datetime
+
+def obter_encomendas_por_data(data_inicio, data_fim):
+    # Convertendo as datas de string para o formato datetime, se necessário
+    data_inicio = datetime.strptime(data_inicio, "%Y-%m-%d")
+    data_fim = datetime.strptime(data_fim, "%Y-%m-%d")
+    
+    # Obter todas as encomendas
+    encomendas = EncomendaView.objects.all()
+    
+    # Dicionário para armazenar as encomendas agrupadas
+    grouped_encomendas = defaultdict(lambda: {
+        "encomenda_id": None,
+        "morada": None,
+        "data_encomenda": None,
+        "estado": None,
+        "produto": [],
+        "preco_total": 0,
+        "nome_user": None
+    })
+    
+    # Filtrar as encomendas com base na data
+    for encomenda in encomendas:
+        # Verificar se a encomenda está dentro do intervalo de datas
+        if data_inicio <= encomenda.data_encomenda <= data_fim:
+            encomenda_id = encomenda.encomenda_id
+            item_data = {
+                "produto_id": encomenda.produto_id,
+                "nome": encomenda.nome_produto,
+                "descricao": encomenda.descricao,
+                "preco_unitario": encomenda.preco_unitario,
+                "quantidade": encomenda.quantidade,
+                "preco_total": encomenda.preco_total,
+            }
+            
+            # Adiciona o item à encomenda correspondente
+            grouped_encomendas[encomenda_id]["produto"].append(item_data)
+            grouped_encomendas[encomenda_id]["preco_total"] += encomenda.preco_total
+            
+            # A primeira vez que encontramos uma encomenda, salvamos os outros dados
+            if grouped_encomendas[encomenda_id]["encomenda_id"] is None:
+                grouped_encomendas[encomenda_id]["encomenda_id"] = encomenda.encomenda_id
+                grouped_encomendas[encomenda_id]["nome_user"] = encomenda.nome_user
+                grouped_encomendas[encomenda_id]["morada"] = encomenda.morada
+                grouped_encomendas[encomenda_id]["data_encomenda"] = encomenda.data_encomenda
+                grouped_encomendas[encomenda_id]["estado"] = encomenda.estado
+    
+    # Transformar o dicionário em uma lista para retorno
+    data = list(grouped_encomendas.values())
+    
+    return data
+
 
 def obter_encomendas_utilizador(utilizador_id):
     # Filtra as encomendas da view com base no utilizador_id

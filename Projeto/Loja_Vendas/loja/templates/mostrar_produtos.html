@@ -6,6 +6,38 @@
 
 {% block content %}
 <style>
+    .categorias-container {
+        display: flex;
+        justify-content: center;
+        gap: 15px;
+        padding: 20px;
+    }
+
+    .categoria-card {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-decoration: none;
+        color: #444;
+        font-size: 1.2rem;
+        background-color: #f8f9fa; /* Cor de fundo suave */
+        border: 1px solid #ddd; /* Borda sutil */
+        border-radius: 50px; /* Borda arredondada para efeito de chip */
+        padding: 10px 20px;
+        transition: transform 0.3s, background-color 0.3s; /* Transições suaves */
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Sombras leves */
+    }
+
+    .categoria-card:hover {
+        transform: scale(1.1); /* Efeito de aumento */
+        background-color: #007bff; /* Cor de fundo ao passar o mouse */
+        color: white; /* Cor do texto ao passar o mouse */
+    }
+
+    .categoria-card span {
+        font-size: 1.1rem;
+        font-weight: 500; /* Peso do texto para melhor legibilidade */
+    }
     /* Estilo dos cards */
     .container {
         display: flex;
@@ -110,7 +142,20 @@
 </style>
 
 <!-- Título da Seção -->
-<h2 style="text-align: center; margin: 20px 0; font-size: 2rem; color: #444;">{{titulo}}</h2>
+{% if titulo != "todos" %}
+<h2 style="text-align: center; margin: 20px 0; font-size: 2rem; color: #444;">{{ titulo }}</h2>
+{% endif %}
+{% if titulo == "todos" %}
+<h2 style="text-align: center; margin: 20px 0; font-size: 2rem; color: #444;">Filtar por Categorias</h2>
+<div class="categorias-container">
+    {% for categoria in categorias %}
+    <a href="{% url 'loja_categoria' categoria.categoria_id %}" class="categoria-card">
+        <span>{{ categoria.nome }}</span>
+    </a>
+    {% endfor %}
+</div>
+{% endif %}
+
 
 <!-- Seção de Produtos -->
 <div class="container">
