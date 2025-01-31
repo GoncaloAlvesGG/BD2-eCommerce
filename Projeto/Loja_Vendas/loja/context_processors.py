@@ -7,5 +7,5 @@ def user_info(request):
     }
 
 def categorias(request):
-    categorias = request.session.get('categorias', '')  # Pega todas as categorias
+    categorias = request.session.get('categorias', '') 
     return {'categorias': categorias}

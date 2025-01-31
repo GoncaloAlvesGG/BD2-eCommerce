@@ -150,19 +150,25 @@ CREATE OR REPLACE FUNCTION sp_Produto_CREATE(
     p_preco DECIMAL,
     p_categoria_id INT,
     p_quantidade_em_stock INT
-) RETURNS VOID AS $$
+) RETURNS INT AS $$
+DECLARE
+    v_produto_id INT;
 BEGIN
     -- Tentativa de inserção na tabela produto
     BEGIN
         INSERT INTO produto (nome, descricao, preco, categoria_id, quantidade_em_stock)
-        VALUES (p_nome, p_descricao, p_preco, p_categoria_id, p_quantidade_em_stock);
+        VALUES (p_nome, p_descricao, p_preco, p_categoria_id, p_quantidade_em_stock)
+        RETURNING produto_id INTO v_produto_id; -- Captura o ID do produto inserido
 
     EXCEPTION
         WHEN OTHERS THEN
             -- Em caso de erro, capturamos a exceção e lançamos um erro genérico
             RAISE EXCEPTION 'Erro na inserção do produto: %', SQLERRM;
     END;
-END
+
+    -- Retorna o id do produto criado
+    RETURN v_produto_id;
+END;
 $$ LANGUAGE plpgsql;
 
 --Selecionar Produto
@@ -775,6 +781,17 @@ BEGIN
     RETURN QUERY
     SELECT c.categoria_id, c.nome
     FROM categoria c
+    ORDER BY nome;
+END;
+$$ LANGUAGE plpgsql;
+
+--Obter todos os fornecedores
+CREATE OR REPLACE FUNCTION get_all_fornecedores()
+RETURNS TABLE (fornecedor_id INT, nome VARCHAR, contato VARCHAR, endereco TEXT) AS $$
+BEGIN
+    RETURN QUERY
+    SELECT f.fornecedor_id, f.nome, f.contato, f.endereco
+    FROM fornecedor f
     ORDER BY nome;
 END;
 $$ LANGUAGE plpgsql;

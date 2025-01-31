@@ -99,12 +99,14 @@
             {% for produto in produtos %}
             <tr>
                 <td>{{ produto.produto_id }}</td>
-                <td>{{ produto.nome }}</td>
+                <td>{{ produto.produto_nome }}</td>
                 <td>{{ produto.descricao|default:"Sem descrição" }}</td>
                 <td>€{{ produto.preco }}</td>
                 <td>{{ produto.categoria_nome }}</td>
                 <td>{{ produto.quantidade_em_stock }}</td>
                 <td>
+                    <a class="btn-small"
+                        onclick="requerirProduto('{{ produto.produto_id }}', '{{ produto.produto_nome }}', '{{ produto.preco }}')">Requerer</a>
                     <a href="{% url 'produto_detalhe' produto_id=produto.produto_id %}" class="btn-small">Detalhes</a>
                     <a class="btn-small"
                         onclick="alterarProduto('{{ produto.produto_id }}', '{{ produto.nome }}', '{{ produto.descricao }}', '{{ produto.preco }}', '{{ produto.categoria_id }}', '{{ produto.quantidade_em_stock }}')">Alterar</a>
@@ -126,37 +128,51 @@
         Swal.fire({
             title: 'Adicionar Produto',
             html: `
-                <form id="form-adicionar-produto">
-                    <div style="margin-bottom: 10px;">
-                        <label for="nome">Nome:</label><br>
-                        <input type="text" id="nome" name="nome" class="swal2-input" required>
-                    </div>
-                    <div style="margin-bottom: 10px;">
-                        <label for="descricao">Descrição:</label><br>
-                        <textarea id="descricao" name="descricao" class="swal2-input"></textarea>
-                    </div>
-                    <div style="margin-bottom: 10px;">
-                        <label for="preco">Preço:</label><br>
-                        <input type="number" id="preco" name="preco" class="swal2-input" required>
-                    </div>
-                    <div style="margin-bottom: 10px;">
-                        <label for="categoria">Categoria:</label><br>
-                        <select id="categoria" name="categoria" class="swal2-input" required>
-    {% for categoria in categorias %}
-        <option value="{{ categoria.categoria_id }}">{{ categoria.nome }}</option>
-    {% endfor %}
-</select>
-                    </div>
-                    <div style="margin-bottom: 10px;">
-                        <label for="quantidade">Quantidade:</label><br>
-                        <input type="number" id="quantidade" name="quantidade" class="swal2-input" required>
-                    </div>
-                </form>
-            `,
+        <form id="form-adicionar-produto">
+            <div style="margin-bottom: 10px;">
+                <label for="nome">Nome:</label><br>
+                <input type="text" id="nome" name="nome" class="swal2-input" required>
+            </div>
+            <div style="margin-bottom: 10px;">
+                <label for="descricao">Descrição:</label><br>
+                <textarea id="descricao" name="descricao" class="swal2-input"></textarea>
+            </div>
+            <div style="margin-bottom: 10px;">
+                <label for="preco">Preço:</label><br>
+                <input type="number" id="preco" name="preco" class="swal2-input" required>
+            </div>
+            <div style="margin-bottom: 10px;">
+                <label for="categoria">Categoria:</label><br>
+                <select id="categoria" name="categoria" class="swal2-input" required>
+                    {% for categoria in categorias %}
+                        <option value="{{ categoria.categoria_id }}">{{ categoria.nome }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div style="margin-bottom: 10px;">
+                <label for="fornecedor">Fornecedor:</label><br>
+                <select id="fornecedor" name="fornecedor" class="swal2-input" required>
+                    {% for fornecedor in fornecedores %}
+                        <option value="{{ fornecedor.fornecedor_id }}">{{ fornecedor.nome }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div style="margin-bottom: 10px;">
+                <label for="quantidade">Quantidade:</label><br>
+                <input type="number" id="quantidade" name="quantidade" class="swal2-input" required>
+            </div>
+        </form>
+    `,
             confirmButtonText: 'Adicionar',
             preConfirm: () => {
                 const form = document.getElementById('form-adicionar-produto');
                 const formData = new FormData(form);
+
+                // Depuração: logando os dados do formulário
+                for (let [key, value] of formData.entries()) {
+                    console.log(`${key}: ${value}`);
+                }
+
                 return fetch('{% url "add_produto" %}', {
                     method: 'POST',
                     body: formData,
@@ -218,6 +234,55 @@
             }
         });
     }
+
+    function requerirProduto(produtoId, produtoNome, preco) {
+        Swal.fire({
+            title: `Requerer ${produtoNome}`,
+            html: `
+            <div style="margin-bottom: 10px;">
+                <label for="quantidade-requerida">Quantidade a requerer:</label><br>
+                <input type="number" id="quantidade-requerida" class="swal2-input" required>
+            </div>
+        `,
+            confirmButtonText: 'Requerer',
+            preConfirm: () => {
+                const quantidade = document.getElementById('quantidade-requerida').value;
+
+                // Verificar se a quantidade é válida
+                if (quantidade <= 0) {
+                    Swal.showValidationMessage('A quantidade deve ser maior que zero');
+                    return false;
+                }
+
+                return fetch('{% url "requerir_produto" %}', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        produto_id: produtoId,
+                        quantidade: quantidade,
+                        preco: preco
+                    }),
+                    headers: {
+                        'X-CSRFToken': '{{ csrf_token }}',
+                        'Content-Type': 'application/json',
+                    },
+                }).then(response => {
+                    if (!response.ok) {
+                        throw new Error('Falha ao requerer produto');
+                    }
+                    return response.json();
+                }).catch(error => {
+                    Swal.showValidationMessage(`Erro: ${error}`);
+                });
+            },
+        }).then(result => {
+            if (result.isConfirmed) {
+                Swal.fire('Sucesso', `Produto ${produtoNome} requerido com sucesso!`, 'success').then(() => {
+                    location.reload();
+                });
+            }
+        });
+    }
+
 </script>
 
 {% endblock %}

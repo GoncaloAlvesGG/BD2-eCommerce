@@ -13,9 +13,8 @@ from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
 from django.http import HttpResponse
 from io import BytesIO
-import json
-import bcrypt
-import pandas as pd
+from datetime import datetime, timedelta
+import json, random, bcrypt, pandas as pd
 from .models import EncomendaView
 from openpyxl import Workbook
 from openpyxl.styles import Font, Alignment
@@ -148,19 +147,6 @@ def checkout(request):
     # Página de checkout (vazia por enquanto)
     return render(request, 'checkout.html')
 
-def user_profile(request):
-    if request.method == 'POST':
-        form = UserSettingsForm(request.POST)
-        if form.is_valid():
-            # Salve as definições do utilizador aqui
-            pass
-    else:
-        form = UserSettingsForm()  # Pode preencher com dados existentes, se necessário
-
-    compras = []  # Suponha que você tenha uma forma de obter compras do utilizador
-
-    return render(request, 'seu_template.html', {'form': form, 'compras': compras})
-
 # @login_required
 def perfil(request):
         # O utilizador está autenticado
@@ -183,6 +169,7 @@ def filtrar_encomendas(request):
 def dashboard_produtos(request):
     produtos = ProdutoView.objects.all()
     categorias = get_categorias() 
+    fornecedores = get_fornecedores()
 
     categoria_dict = {categoria['categoria_id']: categoria['nome'] for categoria in categorias}
 
@@ -193,7 +180,7 @@ def dashboard_produtos(request):
         # Add the category name to the produto object
         produto.categoria_nome = categoria_nome
     
-    return render(request, 'dashboard_produtos.html', {'produtos': produtos, 'categorias': categorias})
+    return render(request, 'dashboard_produtos.html', {'produtos': produtos, 'categorias': categorias, 'fornecedores': fornecedores})
 
 def get_product_data(produto_id):
     with connection.cursor() as cursor:
@@ -306,7 +293,6 @@ def finalizar_compra(request):
             return JsonResponse({"success": False, "error": "Invalid request"}, status=500)
     return JsonResponse({"success": False, "error": "Invalid request"}, status=405)
 
-
 def dashboard_configuracoes(request):
     return render(request, 'dashboard_configuracoes.html')
 
@@ -374,6 +360,17 @@ def get_categorias():
     categorias = [{'categoria_id': row[0], 'nome': row[1]} for row in rows]
     
     return categorias
+
+def get_fornecedores():
+    # Calling the stored procedure using raw SQL
+    with connection.cursor() as cursor:
+        cursor.callproc('get_all_fornecedores')  # Calling the stored procedure
+        rows = cursor.fetchall()  # Fetch all rows returned by the procedure
+    
+    # Prepare the categories data
+    fornecedores = [{'fornecedor_id': row[0], 'nome': row[1]} for row in rows]
+    
+    return fornecedores
 
 def obter_encomendas():
     encomendas = EncomendaView.objects.all()
@@ -592,18 +589,45 @@ def enviar_encomenda(request, encomenda_id):
 
     return JsonResponse({"success": False, "error": "Invalid request"}, status=400)
 
+def requerir_produto(request):
+            data = json.loads(request.body)
+            produto_id = data.get('produto_id')
+            quantidade = data.get('quantidade')
+            preco = data.get('preco')
+            preco = (float(preco) * int(quantidade)) * 0.75 #Vamos assumir que os produtos são vendidos todos com uma margem de 25% de lucro
+            horas_adicionais = random.randint(12, 24)
+            data_rececao = datetime.now() + timedelta(hours=horas_adicionais)
+            data_rececao_str = data_rececao.strftime('%Y-%m-%d %H:%M:%S')
+            with connection.cursor() as cursor:
+                cursor.execute("SELECT * FROM obter_fornecedor_produto(%s)", [produto_id])
+                result = cursor.fetchone()  # Retorna apenas um fornecedor
+                cursor.callproc('sp_RequisicaoProduto_CREATE', [result[0], produto_id, quantidade, data_rececao_str])
+                cursor.callproc('sp_FaturaFornecedor_CREATE', [result[0], preco])
+
+            messages.success(request, "Stock adicionado com sucesso!")
+
+            return JsonResponse({"success": True})
 
 def add_produto(request):
-    # Retrieve data from the POST request
+    # Gerar hora random para a receção do produto
+    horas_adicionais = random.randint(12, 24)
+    data_rececao = datetime.now() + timedelta(hours=horas_adicionais)
+    data_rececao_str = data_rececao.strftime('%Y-%m-%d %H:%M:%S')
+
     nome = request.POST['nome']
     descricao = request.POST.get('descricao', '')
     preco = request.POST['preco']
     categoria_id = request.POST['categoria']
+    fornecedor_id = request.POST['fornecedor']
     quantidade = request.POST['quantidade']
+    preco_fatura = (float(preco) * int(quantidade)) * 0.75 #Vamos assumir que os produtos são vendidos todos com uma margem de 25% de lucro
 
     # Use a stored procedure to insert the product data (replace with actual procedure if needed)
     with connection.cursor() as cursor:
-        cursor.callproc('sp_Produto_CREATE', [nome, descricao, preco, categoria_id, quantidade])
+        cursor.callproc('sp_Produto_CREATE', [nome, descricao, preco, categoria_id, 0])
+        produto_id = cursor.fetchone()[0]
+        cursor.callproc('sp_RequisicaoProduto_CREATE', [fornecedor_id, produto_id, quantidade, data_rececao_str])
+        cursor.callproc('sp_FaturaFornecedor_CREATE', [fornecedor_id, preco_fatura])
 
     # Send success message
     messages.success(request, "Produto adicionado com sucesso!")
