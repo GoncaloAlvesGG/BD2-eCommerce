@@ -933,6 +933,49 @@ END;
 $$ LANGUAGE plpgsql;
 
 
+--Obter fornecedor de um produto
+CREATE OR REPLACE FUNCTION obter_fornecedor_produto(p_produto_id INT)
+RETURNS TABLE (
+    fornecedor_id INT,
+    nome VARCHAR,
+    contato VARCHAR,
+    endereco TEXT
+) AS $$
+BEGIN
+    RETURN QUERY 
+    SELECT f.fornecedor_id, f.nome, f.contato, f.endereco
+    FROM requisicao_produto rp
+    JOIN fornecedor f ON rp.fornecedor_id = f.fornecedor_id
+    WHERE rp.produto_id = p_produto_id
+    ORDER BY rp.data_requisicao DESC
+    LIMIT 1;
+END;
+$$ LANGUAGE plpgsql;
+
+--Obter todos os produtos de um fornecedor
+CREATE OR REPLACE FUNCTION obter_produtos_por_fornecedor(fornecedor_id_param INT)
+RETURNS TABLE (
+    produto_id INT,
+    nome VARCHAR(100),
+    descricao TEXT,
+    preco DECIMAL(10,2),
+    quantidade_total INT
+) AS $$
+BEGIN
+    RETURN QUERY 
+    SELECT 
+        p.produto_id, 
+        p.nome, 
+        p.descricao, 
+        p.preco, 
+        SUM(rp.quantidade)::INT AS quantidade_total
+    FROM produto p
+    JOIN requisicao_produto rp ON p.produto_id = rp.produto_id
+    WHERE rp.fornecedor_id = fornecedor_id_param
+    GROUP BY p.produto_id, p.nome, p.descricao, p.preco;
+END;
+$$ LANGUAGE plpgsql;
+
 --Views
 --View Encomendas
 CREATE VIEW vw_encomendas_utilizador AS
@@ -1054,3 +1097,21 @@ AFTER UPDATE OF estado ON encomenda
 FOR EACH ROW
 WHEN (OLD.estado IS DISTINCT FROM NEW.estado)
 EXECUTE FUNCTION criar_fatura();
+
+
+--Adicioanr stock fornecedor
+CREATE OR REPLACE FUNCTION atualizar_stock_produto_requisicao()
+RETURNS TRIGGER AS $$
+BEGIN
+    UPDATE produto
+    SET quantidade_em_stock = quantidade_em_stock + NEW.quantidade
+    WHERE produto_id = NEW.produto_id;
+
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trigger_atualizar_stock_requisicao
+AFTER INSERT ON requisicao_produto
+FOR EACH ROW
+EXECUTE FUNCTION atualizar_stock_produto_requisicao();
