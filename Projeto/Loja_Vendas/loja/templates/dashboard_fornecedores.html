@@ -102,7 +102,7 @@
                 <td>{{ fornecedor.contato|default:"Sem contato" }}</td>
                 <td>{{ fornecedor.endereco|default:"Sem endereço" }}</td>
                 <td>
-                    <a class="btn-small">Ver Produtos</a>
+                    <a class="btn-small" onclick="verProdutos('{{ fornecedor.fornecedor_id }}')">Ver Produtos</a>
                     <a class="btn-small"
                         onclick="alterarFornecedor('{{ fornecedor.fornecedor_id }}', '{{ fornecedor.nome }}', '{{ fornecedor.contato }}', '{{ fornecedor.endereco }}')">Alterar</a>
                     <a class="btn-small btn-danger"
@@ -166,9 +166,7 @@
             }
         });
     }
-</script>
 
-<script>
     function alterarFornecedor(id, nome, contato, endereco) {
         Swal.fire({
             title: 'Alterar Fornecedor',
@@ -217,9 +215,7 @@
             }
         });
     }
-</script>
 
-<script>
     function excluirFornecedor(id) {
         Swal.fire({
             title: 'Tem a certeza?',
@@ -263,6 +259,51 @@
             }
         });
     }
+
+    function verProdutos(fornecedor_id) {
+        fetch(`/fornecedores/${fornecedor_id}/produtos/`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.produtos.length === 0) {
+                    Swal.fire('Produtos', 'Nenhum produto encontrado para este fornecedor.', 'info');
+                    return;
+                }
+
+                // Criar uma tabela para os produtos
+                let produtoTable = `
+                <table class="products-table" style="width: 100%; text-align: left; border-collapse: collapse;">
+                    <thead>
+                        <tr>
+                            <th>Produto</th>
+                            <th>Quantidade em Stock</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+                data.produtos.forEach(produto => {
+                    produtoTable += `
+                    <tr>
+                        <td>${produto.nome}</td>
+                        <td>${produto.quantidade_em_stock}</td>
+                    </tr>
+                `;
+                });
+
+                produtoTable += '</tbody></table>';
+
+                Swal.fire({
+                    title: 'Produtos do Fornecedor',
+                    html: produtoTable,
+                    confirmButtonText: 'Fechar'
+                });
+            })
+            .catch(error => {
+                Swal.fire('Erro!', `Erro ao carregar produtos: ${error.message}`, 'error');
+            });
+    }
+
+
 </script>
 
 

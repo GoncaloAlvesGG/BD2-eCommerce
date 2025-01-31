@@ -46,6 +46,6 @@ urlpatterns = [
     path('dashboard/fornecedores/add', views.add_fornecedor, name='add_fornecedor'),
     path('dashboard/fornecedores/update', views.update_fornecedor, name='update_fornecedor'),
     path('dashboard/fornecedores/delete', views.delete_fornecedor, name='delete_fornecedor'),
-    path('dashboard/configuracoes/', views.dashboard_configuracoes, name='dashboard_configuracoes'),
+    path('fornecedores/<int:fornecedor_id>/produtos/', views.produtos_fornecedor, name='produtos_fornecedor'),
 
 ]

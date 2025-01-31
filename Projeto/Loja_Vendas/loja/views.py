@@ -293,9 +293,6 @@ def finalizar_compra(request):
             return JsonResponse({"success": False, "error": "Invalid request"}, status=500)
     return JsonResponse({"success": False, "error": "Invalid request"}, status=405)
 
-def dashboard_configuracoes(request):
-    return render(request, 'dashboard_configuracoes.html')
-
 def dashboard_clientes(request):
     utilizadores = UtilizadorView.objects.all()
     return render(request, 'dashboard_clientes.html', {'utilizadores': utilizadores})
@@ -555,6 +552,20 @@ def delete_fornecedor(request):
             return JsonResponse({"success": False, "error": str(e)}, status=400)
 
     return JsonResponse({"success": False, "error": "Invalid request"}, status=400)
+
+def produtos_fornecedor(request, fornecedor_id):
+    with connection.cursor() as cursor:
+        
+        # Chamar a função para obter os produtos
+        cursor.execute("SELECT * FROM obter_produtos_por_fornecedor(%s);", [fornecedor_id])
+        produtos = cursor.fetchall()
+
+    produtos_data = [
+        {"produto_id": p[0], "nome": p[1], "quantidade_em_stock": p[4]}
+        for p in produtos
+    ]
+
+    return JsonResponse({"produtos": produtos_data})
 
 def delete_cliente(request):
     if request.method == 'POST':
