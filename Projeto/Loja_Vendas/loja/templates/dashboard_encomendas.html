@@ -149,6 +149,8 @@
 
     <div class="header">
         <h2>Todas as Encomendas</h2>
+        <a class="btn btn-primary" onclick="exportarRelatorio()">Exportar Relatório</a>
+
 
     </div>
     <div class="orders-table-container" id="ordersTable">
@@ -156,7 +158,7 @@
             <thead>
                 <tr>
                     <th>#</th>
-                    <th>Data</th>
+                    <th>Hora/Data</th>
                     <th>Cliente</th>
                     <th>Itens</th>
                     <th>Total</th>
@@ -169,7 +171,7 @@
                 {% for encomenda in encomendas %}
                 <tr>
                     <td>{{ encomenda.encomenda_id }}</td>
-                    <td>{{ encomenda.data_encomenda|date:"d/m/Y" }}</td>
+                    <td>{{ encomenda.data_encomenda|date:"H:i - d/m/Y " }}</td>
                     <td>{{ encomenda.nome_user }}</td>
                     <td>
                         {% for item in encomenda.produto %}
@@ -240,6 +242,38 @@
             }
         });
     }
+
+    function exportarRelatorio() {
+        Swal.fire({
+            title: 'Exportar Relatório',
+            html: `
+            <label for="data-inicio">Data de Início:</label>
+            <input type="date" id="data-inicio" class="swal2-input">
+            <label for="data-fim">Data de Fim:</label>
+            <input type="date" id="data-fim" class="swal2-input">
+        `,
+            showCancelButton: true,
+            confirmButtonText: 'Exportar',
+            cancelButtonText: 'Cancelar',
+            preConfirm: () => {
+                const dataInicio = document.getElementById('data-inicio').value;
+                const dataFim = document.getElementById('data-fim').value;
+
+                if (!dataInicio || !dataFim) {
+                    Swal.showValidationMessage('Por favor, preencha ambas as datas.');
+                    return false;
+                }
+
+                return { dataInicio, dataFim };
+            }
+        }).then((result) => {
+            if (result.isConfirmed) {
+                const { dataInicio, dataFim } = result.value;
+                window.location.href = `/exportar-relatorio/?data_inicio=${dataInicio}&data_fim=${dataFim}`;
+            }
+        });
+    }
+
 </script>
 
 

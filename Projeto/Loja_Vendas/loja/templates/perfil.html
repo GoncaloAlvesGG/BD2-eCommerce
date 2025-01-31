@@ -60,9 +60,12 @@
         background-color: #0056b3;
     }
 
-    .form-container,
-    .orders-table-container {
+    .form-container {
         display: none;
+        margin-top: 20px;
+    }
+
+    .orders-table-container {
         margin-top: 20px;
     }
 
@@ -181,7 +184,6 @@
     <div class="orders-container">
         <div class="header">
             <h2>Minhas Encomendas</h2>
-            <button type="button" class="btn" onclick="toggleVisibility('ordersTable')">Ver Encomendas</button>
         </div>
 
         <div class="orders-table-container" id="ordersTable">

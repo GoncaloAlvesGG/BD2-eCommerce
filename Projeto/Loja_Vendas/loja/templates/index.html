@@ -6,45 +6,65 @@
 
 {% block content %}
 <style>
-    /* Estilo dos cards */
+   .categorias-container {
+        display: flex;
+        justify-content: center;
+        gap: 15px;
+        padding: 20px;
+    }
+
+    .categoria-card {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-decoration: none;
+        color: #444;
+        font-size: 1.2rem;
+        background-color: #f8f9fa; /* Cor de fundo suave */
+        border: 1px solid #ddd; /* Borda sutil */
+        border-radius: 50px; /* Borda arredondada para efeito de chip */
+        padding: 10px 20px;
+        transition: transform 0.3s, background-color 0.3s; /* Transições suaves */
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Sombras leves */
+    }
+
+    .categoria-card:hover {
+        transform: scale(1.1); /* Efeito de aumento */
+        background-color: #007bff; /* Cor de fundo ao passar o mouse */
+        color: white; /* Cor do texto ao passar o mouse */
+    }
+
+    .categoria-card span {
+        font-size: 1.1rem;
+        font-weight: 500; /* Peso do texto para melhor legibilidade */
+    }
+
+    /* Estilo dos produtos */
     .container {
         display: flex;
         justify-content: center;
         align-items: stretch;
-        /* Alinha os cards para terem a mesma altura */
-        min-height: 100vh;
-        /* Centraliza os cards verticalmente */
         flex-wrap: wrap;
         gap: 20px;
         padding: 20px;
         width: 100vw;
-        /* Largura total da página */
-        position: relative;
-        /* Garante que o conteúdo fique acima do menu quando ele estiver oculto */
-        z-index: 10;
-        /* Cards ficam acima do menu */
         box-sizing: border-box;
     }
 
     .card {
         display: flex;
         flex-direction: column;
-        /* Permite que o conteúdo cresça verticalmente */
         justify-content: space-between;
-        /* Distribui o conteúdo uniformemente */
+        position: relative;
         text-decoration: none;
-        /* Remove o sublinhado do link */
         color: inherit;
-        /* Herda as cores padrão */
         background-color: white;
         border-radius: 10px;
         box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         overflow: hidden;
         width: 300px;
         height: 450px;
-        /* Deixa a altura flexível inicialmente */
         min-height: 400px;
-        /* Altura mínima para uniformizar */
         text-align: center;
         transition: transform 0.2s;
     }
@@ -63,13 +83,11 @@
         font-size: 1.25rem;
         margin: 10px 0;
         color: #444;
-        /* Cor neutra para títulos */
     }
 
     .card p {
         font-size: 1rem;
         color: #777;
-        /* Cor neutra para descrição */
         padding: 0 10px;
     }
 
@@ -77,13 +95,11 @@
         font-size: 1.5rem;
         font-weight: bold;
         color: #666;
-        /* Cor neutra para preço */
         margin: 10px 0;
     }
 
     .card button {
         background-color: #228B22;
-        /* Cor neutra para botão */
         color: white;
         border: none;
         padding: 10px 20px;
@@ -95,22 +111,96 @@
 
     .card button:hover {
         background-color: #006400;
-        /* Cor neutra para o hover do botão */
+    }
+
+    .card button:disabled {
+        background-color: #aaa;
+        cursor: not-allowed;
+    }
+
+    /* Tags de Destaque */
+    .tag-novo,
+    .tag-promocao {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        background-color: red;
+        color: white;
+        padding: 5px;
+        font-size: 0.8rem;
+        border-radius: 5px;
+    }
+
+    .tag-promocao {
+        background-color: #d9534f;
+    }
+
+    .stock {
+        font-size: 0.9rem;
+        margin-top: 5px;
+    }
+
+    .stock.esgotado {
+        color: red;
+        font-weight: bold;
     }
 </style>
 
-<!-- Título da Seção -->
-<h2 style="text-align: center; margin: 20px 0; font-size: 2rem; color: #444;">Produtos adicionados recentemente</h2>
+<!-- Categorias -->
+<h2 style="text-align: center; margin: 20px 0; font-size: 2rem; color: #444;">Filtar por Categorias</h2>
+<div class="categorias-container">
+    {% for categoria in categorias %}
+    <a href="{% url 'loja_categoria' categoria.categoria_id %}" class="categoria-card">
+        <span>{{ categoria.nome }}</span>
+    </a>
+    {% endfor %}
+</div>
 
-<!-- Seção de Produtos -->
+<!-- Produtos em Destaque -->
+<h2 style="text-align: center; margin: 20px 0; font-size: 2rem; color: #d9534f;">🔥 Produtos em Destaque 🔥</h2>
 <div class="container">
-    {% for produto in produtos %}
+    {% for produto in produtos_stock %}
     <a href="{% url 'produto_detalhe' produto_id=produto.produto_id %}" class="card">
         <img src="{% static 'images/monitor_escuro.jpg' %}" alt="{{ produto.nome }}">
         <h3>{{ produto.nome }}</h3>
         <p>{{ produto.descricao|default:"Descrição não disponível." }}</p>
+        <div class="price">
+            <span style="text-decoration: line-through; color: #777;">{{ produto.preco_antigo }} €</span>
+            <strong style="color: #d9534f;">{{ produto.preco }} €</strong>
+        </div>
+        <div class="stock {% if produto.quantidade_em_stock == 0 %} esgotado {% endif %}">
+            {% if produto.quantidade_em_stock > 0 %}
+            Em stock: {{ produto.quantidade_em_stock }}
+            {% else %}
+            ESGOTADO ❌
+            {% endif %}
+        </div>
+        <button {% if produto.quantidade_em_stock|default:0 == 0 %} disabled {% endif %}>Comprar Agora</button>
+    </a>
+    {% endfor %}
+</div>
+
+<!-- Produtos Recentes -->
+<h2 style="text-align: center; margin: 20px 0; font-size: 2rem; color: #444;">Produtos adicionados recentemente</h2>
+<div class="container">
+    {% for produto in produtos %}
+    <a href="{% url 'produto_detalhe' produto_id=produto.produto_id %}" class="card">
+        <div class="tag-novo" {% if produto.novo %} style="display:block;" {% else %} style="display:none;" {% endif %}>
+            Novo 🔥
+        </div>
+        <img src="{% static 'images/monitor_escuro.jpg' %}" alt="{{ produto.nome }}">
+        <h3>{{ produto.nome }}</h3>
+        <p>{{ produto.descricao|default:"Descrição não disponível." }}</p>
         <div class="price">{{ produto.preco }} €</div>
-        <button>Comprar Agora</button>
+        <div class="stock {% if produto.quantidade_em_stock == 0 %} esgotado {% endif %}">
+            {% if produto.quantidade_em_stock > 0 %}
+            Em stock: {{ produto.quantidade_em_stock }}
+            {% else %}
+            ESGOTADO ❌
+            {% endif %}
+        </div>
+        <button {% if produto.quantidade_em_stock|default:0 == 0 %} disabled {% endif %}>Comprar Agora</button>
+
     </a>
     {% endfor %}
 </div>

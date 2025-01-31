@@ -97,6 +97,16 @@
         background-color: #006400;
         /* Cor neutra para o hover do botão */
     }
+
+    .stock {
+        font-size: 0.9rem;
+        margin-top: 5px;
+    }
+
+    .stock.esgotado {
+        color: red;
+        font-weight: bold;
+    }
 </style>
 
 <!-- Título da Seção -->
@@ -110,7 +120,14 @@
         <h3>{{ produto.nome }}</h3>
         <p>{{ produto.descricao|default:"Descrição não disponível." }}</p>
         <div class="price">{{ produto.preco }} €</div>
-        <button>Comprar Agora</button>
+        <div class="stock {% if produto.quantidade_em_stock == 0 %} esgotado {% endif %}">
+            {% if produto.quantidade_em_stock > 0 %}
+            Em stock: {{ produto.quantidade_em_stock }}
+            {% else %}
+            ESGOTADO ❌
+            {% endif %}
+        </div>
+        <button {% if produto.quantidade_em_stock|default:0 == 0 %} disabled {% endif %}>Comprar Agora</button>
     </a>
     {% endfor %}
 </div>

@@ -739,6 +739,46 @@ BEGIN
 END;
 $$;
 
+--Obter produtos de uma categoria
+CREATE OR REPLACE FUNCTION obter_produtos_categoria(cat_id INT)
+RETURNS TABLE (
+    produto_id INT,
+    nome VARCHAR,
+    descricao TEXT,
+    preco DECIMAL(10, 2),
+    quantidade_em_stock INT,
+    data_adicao TIMESTAMP
+) 
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    RETURN QUERY
+    SELECT 
+        p.produto_id, 
+        p.nome, 
+        p.descricao, 
+        p.preco, 
+        p.quantidade_em_stock, 
+        p.data_adicao
+    FROM 
+        produto p
+    WHERE 
+        p.categoria_id = cat_id;
+END;
+$$;
+
+
+--Obter todas as categorias
+CREATE OR REPLACE FUNCTION get_all_categories()
+RETURNS TABLE (categoria_id INT, nome VARCHAR) AS $$
+BEGIN
+    RETURN QUERY
+    SELECT c.categoria_id, c.nome
+    FROM categoria c
+    ORDER BY nome;
+END;
+$$ LANGUAGE plpgsql;
+
 --Inserção Encomenda com vários produtos (basicamente quando o utilizador acaba o seu pedido)
 CREATE OR REPLACE FUNCTION sp_Encomenda_Com_Itens_CREATE(
     p_utilizador_id INT,
@@ -855,9 +895,29 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+--Função obter 4 produtos mais em stock
+CREATE OR REPLACE FUNCTION get_top_4_produtos_por_stock()
+RETURNS TABLE (
+    produto_id INT,
+    nome VARCHAR,
+    descricao TEXT,
+    preco DECIMAL(10, 2),
+    categoria_id INT,
+    quantidade_em_stock INT,
+    data_adicao TIMESTAMP
+) AS $$
+BEGIN
+    RETURN QUERY
+    SELECT p.produto_id, p.nome, p.descricao, p.preco, p.categoria_id, p.quantidade_em_stock, p.data_adicao
+    FROM produto p
+    ORDER BY quantidade_em_stock DESC
+    LIMIT 4;
+END;
+$$ LANGUAGE plpgsql;
+
 
 --Views
---View Encomendas de um user
+--View Encomendas
 CREATE VIEW vw_encomendas_utilizador AS
 SELECT 
     e.encomenda_id,

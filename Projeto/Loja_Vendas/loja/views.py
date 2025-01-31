@@ -15,6 +15,11 @@ from django.http import HttpResponse
 from io import BytesIO
 import json
 import bcrypt
+import pandas as pd
+from .models import EncomendaView
+from openpyxl import Workbook
+from openpyxl.styles import Font, Alignment
+from openpyxl.utils import get_column_letter
 
 def produto_detalhe(request, produto_id):
     with connection.cursor() as cursor:
@@ -104,7 +109,8 @@ def logout_view(request):
 
 def index(request):
     produtos = produtos_4recentes()
-    return render(request, 'index.html', {'produtos': produtos})
+    produtos_stock = produtos_mais_stock()
+    return render(request, 'index.html', {'produtos': produtos, 'produtos_stock': produtos_stock})
 
 def procurar_produto(request):
     titulo = 'Resultados da sua pesquisa'
@@ -300,6 +306,13 @@ def produtos_4recentes():
         resultados = [dict(zip(colunas, row)) for row in cursor.fetchall()]
     return resultados
 
+def produtos_mais_stock():
+    with connection.cursor() as cursor:
+        cursor.execute("SELECT * FROM get_top_4_produtos_por_stock()")
+        colunas = [col[0] for col in cursor.description]
+        resultados = [dict(zip(colunas, row)) for row in cursor.fetchall()]
+    return resultados
+
 def get_all_produtos():
     with connection.cursor() as cursor:
         cursor.execute("SELECT * FROM get_all_produtos()")
@@ -383,6 +396,104 @@ def obter_encomendas():
     data = list(grouped_encomendas.values())
     
     return data
+
+def exportar_relatorio(request):
+    data_inicio = request.GET.get('data_inicio')
+    data_fim = request.GET.get('data_fim')
+
+    if not data_inicio or not data_fim:
+        return HttpResponse("Datas inválidas", status=400)
+
+    encomendas = EncomendaView.objects.filter(data_encomenda__range=[data_inicio, data_fim])
+
+    # Separar encomendas por estado
+    enviadas = []
+    pendentes = []
+
+    for encomenda in encomendas:
+        data_formatada = encomenda.data_encomenda.strftime('%Y-%m-%d')
+        item = {
+            "Encomenda ID": encomenda.encomenda_id,
+            "Nome do Cliente": encomenda.nome_user,
+            "Morada": encomenda.morada,
+            "Data da Encomenda": data_formatada,
+            "Estado": encomenda.estado,
+            "Produto": encomenda.nome_produto,
+            "Preço Total": encomenda.preco_total
+        }
+
+        if encomenda.estado.lower() == "enviada":
+            enviadas.append(item)
+        else:
+            pendentes.append(item)
+
+    # Criar ficheiro Excel
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "Relatório"
+
+    # Adicionar Título
+    titulo = f"Relatório de Vendas - {data_inicio} a {data_fim}"
+    ws.append([titulo])
+    ws.merge_cells(start_row=1, start_column=1, end_row=1, end_column=7)
+    ws["A1"].font = Font(size=14, bold=True)
+    ws["A1"].alignment = Alignment(horizontal="center")
+
+    # Criar função para adicionar tabelas formatadas
+    def adicionar_tabela(nome, dados, linha_inicial):
+        ws.append([])
+        ws.append([nome])
+        ws["A{}".format(linha_inicial + 1)].font = Font(bold=True, size=12)
+
+        if dados:
+            df = pd.DataFrame(dados)
+
+            # Adicionar cabeçalhos com formatação
+            ws.append(df.columns.tolist())
+            ultima_linha = ws.max_row
+            for col_num, col_nome in enumerate(df.columns, start=1):
+                cell = ws.cell(row=ultima_linha, column=col_num)
+                cell.font = Font(bold=True)
+                cell.alignment = Alignment(horizontal="center")
+
+            # Adicionar os dados
+            for r in df.itertuples(index=False, name=None):
+                ws.append(r)
+
+            # Adicionar somatório final
+            total = sum(item["Preço Total"] for item in dados)
+            ws.append([])
+            ws.append(["Total", "", "", "", "", "", total])
+            ws["G{}".format(ws.max_row)].font = Font(bold=True)
+
+            # Ajustar a largura das colunas automaticamente
+            for col in range(1, ws.max_column + 1):
+                max_length = 0
+                col_letter = get_column_letter(col)
+                for cell in ws[col_letter]:
+                    try:
+                        if cell.value:
+                            max_length = max(max_length, len(str(cell.value)))
+                    except:
+                        pass
+                ws.column_dimensions[col_letter].width = max_length + 2  # Adiciona um pouco de espaço extra
+
+        else:
+            ws.append(["Sem dados"])
+
+    # Adicionar tabela "Enviadas"
+    adicionar_tabela("📦 Encomendas Enviadas", enviadas, ws.max_row + 2)
+
+    # Adicionar tabela "Pendentes"
+    adicionar_tabela("⌛ Encomendas Pendentes", pendentes, ws.max_row + 2)
+
+    # Enviar ficheiro como resposta
+    response = HttpResponse(content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+    response["Content-Disposition"] = f'attachment; filename="relatorio_vendas {data_inicio} a {data_fim}.xlsx"'
+    wb.save(response)
+
+    return response
+
 
 def add_fornecedor(request):
 
