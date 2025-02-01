@@ -21,14 +21,14 @@ urlpatterns = [
     path('finalizar_compra/', views.finalizar_compra, name='finalizar_compra'),  # Finalização da compra
     path('perfil/', views.perfil, name='perfil'), # Perfil do usuário
     path('recuperar_senha/', views.recuperar_senha, name='recuperar_senha'),  # Recuperar senha
+    path('add_to_cart/<int:produto_id>/', views.add_to_cart, name='add_to_cart'),
 
     path('dashboard/', views.admin_dashboard, name='admin_dashboard'),
     path('dashboard/encomendas/', views.dashboard_encomendas, name='dashboard_encomendas'),
     path('dashboard/encomendas/enviar/<int:encomenda_id>/', views.enviar_encomenda, name='enviar_encomenda'),
     path('dashboard/encomendas/filtrar/', views.filtrar_encomendas, name='filtrar_encomendas'),
     path('exportar-relatorio/', views.exportar_relatorio, name='exportar_relatorio'),
-
-    path('add_to_cart/<int:produto_id>/', views.add_to_cart, name='add_to_cart'),
+    
     #Produtos
     path('dashboard/produtos/', views.dashboard_produtos, name='dashboard_produtos'),
     path('dashboard/produtos/add', views.add_produto, name='add_produto'),
