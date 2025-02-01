@@ -103,6 +103,7 @@
                 <td>{{ fornecedor.endereco|default:"Sem endereço" }}</td>
                 <td>
                     <a class="btn-small" onclick="verProdutos('{{ fornecedor.fornecedor_id }}')">Ver Produtos</a>
+                    <a class="btn-small" onclick="verFaturas('{{ fornecedor.fornecedor_id }}')">Ver Faturas</a>
                     <a class="btn-small"
                         onclick="alterarFornecedor('{{ fornecedor.fornecedor_id }}', '{{ fornecedor.nome }}', '{{ fornecedor.contato }}', '{{ fornecedor.endereco }}')">Alterar</a>
                     <a class="btn-small btn-danger"
@@ -300,6 +301,51 @@
             })
             .catch(error => {
                 Swal.fire('Erro!', `Erro ao carregar produtos: ${error.message}`, 'error');
+            });
+    }
+
+    function verFaturas(fornecedor_id) {
+        fetch(`/fornecedores/${fornecedor_id}/faturas/`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.faturas.length === 0) {
+                    Swal.fire('Faturas', 'Nenhuma fatura encontrada para este fornecedor.', 'info');
+                    return;
+                }
+
+                // Criar uma tabela para as faturas
+                let faturaTable = `
+                <table class="products-table" style="width: 100%; border-collapse: collapse;">
+                    <thead>
+                        <tr>
+                            <th>ID Fatura</th>
+                            <th>Data de Emissão</th>
+                            <th>Valor Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                `;
+
+                data.faturas.forEach(fatura => {
+                    faturaTable += `
+                    <tr>
+                        <td>${fatura.id_fatura}</td>
+                        <td>${fatura.data_emissao}</td>
+                        <td>${fatura.valor_total}</td>
+                    </tr>
+                    `;
+                });
+
+                faturaTable += '</tbody></table>';
+
+                Swal.fire({
+                    title: 'Faturas do Fornecedor',
+                    html: faturaTable,
+                    confirmButtonText: 'Fechar'
+                });
+            })
+            .catch(error => {
+                Swal.fire('Erro!', `Erro ao carregar faturas: ${error.message}`, 'error');
             });
     }
 

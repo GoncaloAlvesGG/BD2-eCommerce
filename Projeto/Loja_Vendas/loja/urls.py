@@ -48,5 +48,6 @@ urlpatterns = [
     path('dashboard/fornecedores/update', views.update_fornecedor, name='update_fornecedor'),
     path('dashboard/fornecedores/delete', views.delete_fornecedor, name='delete_fornecedor'),
     path('fornecedores/<int:fornecedor_id>/produtos/', views.produtos_fornecedor, name='produtos_fornecedor'),
+    path('fornecedores/<int:fornecedor_id>/faturas/', views.obter_faturas_fornecedor, name='obter_faturas_fornecedor'),
 
 ]

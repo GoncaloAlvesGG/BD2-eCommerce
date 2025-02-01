@@ -53,6 +53,28 @@ def encomenda(request, encomenda_id):
 def admin_dashboard(request):
     return render(request, 'dashboard.html')
 
+def obter_faturas_fornecedor(request, fornecedor_id):
+    with connection.cursor() as cursor:
+        cursor.execute("SELECT * FROM obter_faturas_fornecedor(%s)", [fornecedor_id])
+        rows = cursor.fetchall()
+    
+    faturas = []
+    for row in rows:
+        # Formatar a data no formato "H:i - d/m/Y"
+        data_emissao = row[2]
+        if data_emissao:
+            formatted_date = data_emissao.strftime('%H:%M - %d/%m/%Y')
+        else:
+            formatted_date = None
+        
+        faturas.append({
+            'id_fatura': row[0],
+            'data_emissao': formatted_date,
+            'valor_total': row[3]
+        })
+    
+    return JsonResponse({'faturas': faturas})
+
 
 
 def registo(request):
