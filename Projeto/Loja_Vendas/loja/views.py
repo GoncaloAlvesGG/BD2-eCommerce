@@ -37,8 +37,16 @@ def produto_detalhe(request, produto_id):
     return render(request, 'produto_detalhe.html', {'produto': produto})
 
 def encomenda(request, encomenda_id):
-    encomenda_list = obter_encomenda(encomenda_id)  # Assuming this returns a list
-    encomenda = encomenda_list[0] if encomenda_list else None  # Extract the first item
+    utilizador_id = request.session.get('utilizador_id')
+    is_admin = request.session.get('is_admin', False)
+
+    encomenda_list = obter_encomenda(encomenda_id)  # Supondo que retorna uma lista
+    encomenda = encomenda_list[0] if encomenda_list else None
+
+    # Se não houver encomenda ou o utilizador não for o dono nem admin, negar acesso
+    if not encomenda or (not is_admin and encomenda['utilizador_id'] != utilizador_id):
+        return render(request, 'erro.html', {'mensagem': 'Não tem permissão para ver esta encomenda.'})
+
     return render(request, 'detalhe_encomenda.html', {'encomenda': encomenda})
 
 
@@ -645,6 +653,26 @@ def add_produto(request):
 
     return JsonResponse({"success": True})
 
+def update_produto(request):
+    if request.method == 'POST':
+        try:
+            cliente_id = request.POST['cliente_id']
+            nome = request.POST['nome']
+            email = request.POST['email']
+            isAdmin = request.POST.get('isAdmin', 'false') == 'true'
+            senha = request.POST.get('senha', None) 
+
+            
+            with connection.cursor() as cursor:
+                cursor.callproc('sp_Utilizador_UPDATE', [cliente_id, nome, email, senha, isAdmin])
+            return JsonResponse({"success": True})
+        except Exception as e:
+            return JsonResponse({"success": False, "error": str(e)}, status=400)
+
+    return JsonResponse({"success": False, "error": "Invalid request"}, status=400)
+
+from datetime import datetime
+
 def add_categoria(request):
     # Retrieve data from the POST request
     nome = request.POST['nome']
@@ -784,7 +812,8 @@ def obter_encomenda(encomenda_id):
         "estado": None,
         "produto": [],
         "preco_total": 0,
-        "nome_user": None
+        "nome_user": None,
+        "utilizador_id": 0
     })
     
     # Agrupar as encomendas e calcular o total
@@ -797,6 +826,7 @@ def obter_encomenda(encomenda_id):
             "preco_unitario": encomenda.preco_unitario,
             "quantidade": encomenda.quantidade,
             "preco_total": encomenda.preco_total,
+            "utilizador_id": encomenda.utilizador_id
         }
         
         # Adiciona o item à encomenda correspondente
@@ -810,6 +840,7 @@ def obter_encomenda(encomenda_id):
             grouped_encomendas[encomenda_id]["morada"] = encomenda.morada
             grouped_encomendas[encomenda_id]["data_encomenda"] = encomenda.data_encomenda
             grouped_encomendas[encomenda_id]["estado"] = encomenda.estado
+            grouped_encomendas[encomenda_id]["utilizador_id"] = encomenda.utilizador_id
     
     # Transformar o dicionário em uma lista para retorno
     data = list(grouped_encomendas.values())

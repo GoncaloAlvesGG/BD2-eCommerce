@@ -33,6 +33,7 @@ urlpatterns = [
     path('dashboard/produtos/', views.dashboard_produtos, name='dashboard_produtos'),
     path('dashboard/produtos/add', views.add_produto, name='add_produto'),
     path('dashboard/produtos/add_categoria', views.add_categoria, name='add_categoria'),
+    path('dashboard/produtos/update', views.update_produto, name='update_produto'),
     path('dashboard/produtos/requerir', views.requerir_produto, name='requerir_produto'),
 
     #Clientes

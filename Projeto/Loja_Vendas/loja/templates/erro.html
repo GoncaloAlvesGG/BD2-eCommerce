@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% load static %}
+
+{% block title %}Erro - Minha Loja{% endblock %}
+
+{% block content %}
+<div
+    style="display: flex; flex-direction: column; justify-content: center; align-items: center; height: 80vh; text-align: center;">
+    <h2 style="color: #8B0000;">{{ mensagem }}</h2>
+    <a href="{% url 'index' %}"
+        style="background-color: #8B0000; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; font-weight: bold; margin-top: 20px;">Voltar</a>
+</div>
+{% endblock %}
