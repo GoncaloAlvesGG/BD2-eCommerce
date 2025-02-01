@@ -6,38 +6,58 @@
 
 {% block content %}
 <style>
-   .categorias-container {
+    .categorias-container {
         display: flex;
+        flex-wrap: wrap; /* Permite que as categorias quebrem linha em telas menores */
         justify-content: center;
         gap: 15px;
         padding: 20px;
     }
-
+    
     .categoria-card {
         display: flex;
         align-items: center;
         justify-content: center;
         text-decoration: none;
-        color: #444;
+        color: #333; /* Cor mais escura para melhor leitura */
         font-size: 1.2rem;
-        background-color: #f8f9fa; /* Cor de fundo suave */
-        border: 1px solid #ddd; /* Borda sutil */
-        border-radius: 50px; /* Borda arredondada para efeito de chip */
-        padding: 10px 20px;
-        transition: transform 0.3s, background-color 0.3s; /* Transições suaves */
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Sombras leves */
+        font-weight: 500;
+        background-color:rgb(168, 165, 165); /* Fundo mais moderno */
+        border: 2px solid transparent; /* Borda invisível para evitar movimentação ao passar o mouse */
+        border-radius: 8px; /* Mantendo o efeito de "chip" */
+        padding: 12px 25px;
+        transition: all 0.3s ease-in-out; /* Suaviza todas as transições */
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Sombras mais suaves */
+        cursor: pointer;
+        text-transform: capitalize; /* Torna a primeira letra maiúscula */
     }
-
+    
     .categoria-card:hover {
-        transform: scale(1.1); /* Efeito de aumento */
-        background-color: #007bff; /* Cor de fundo ao passar o mouse */
-        color: white; /* Cor do texto ao passar o mouse */
+        transform: translateY(-3px); /* Pequeno efeito de elevação ao passar o mouse */
+        background-color: #007bff;
+        color: white;
+        border: 2px solid #0056b3; /* Adiciona uma borda visível ao passar o mouse */
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15); /* Sombra mais evidente */
     }
-
+    
     .categoria-card span {
         font-size: 1.1rem;
-        font-weight: 500; /* Peso do texto para melhor legibilidade */
+        font-weight: bold;
     }
+    
+    /* Responsividade para telas menores */
+    @media (max-width: 600px) {
+        .categorias-container {
+            flex-direction: column;
+            align-items: center;
+        }
+    
+        .categoria-card {
+            width: 90%; /* Ajusta o tamanho dos cards em telas menores */
+            text-align: center;
+        }
+    }
+    
 
     /* Estilo dos produtos */
     .container {
@@ -144,11 +164,46 @@
         color: red;
         font-weight: bold;
     }
+
+    .toggle-button {
+        display: block;
+        margin: 20px auto;
+        padding: 10px 15px;
+        font-size: 1.2rem;
+        color: white;
+        background-color: #007bff;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background-color 0.3s;
+    }
+
+    .toggle-button:hover {
+        background-color: #0056b3;
+    }
+
+    /* Container escuro para os títulos */
+    .title-container {
+        background-color: #444; /* Cor mais escura */
+        color: white;
+        padding: 15px;
+        text-align: center;
+        font-size: 2rem;
+        margin: 20px 0;
+        border-radius: 8px;
+        width: 85%;
+        margin-left: auto;
+        margin-right: auto;
+    }
 </style>
 
+<!-- Botão para mostrar/ocultar filtros -->
+<button class="toggle-button" onclick="toggleFiltros()">
+    Mostrar Filtros <span id="arrow">▼</span>
+</button>
+
 <!-- Categorias -->
-<h2 style="text-align: center; margin: 20px 0; font-size: 2rem; color: #444;">Filtar por Categorias</h2>
-<div class="categorias-container">
+<div id="categorias" class="categorias-container">
     {% for categoria in categorias %}
     <a href="{% url 'loja_categoria' categoria.categoria_id %}" class="categoria-card">
         <span>{{ categoria.nome }}</span>
@@ -157,7 +212,9 @@
 </div>
 
 <!-- Produtos em Destaque -->
-<h2 style="text-align: center; margin: 20px 0; font-size: 2rem; color: #d9534f;">🔥 Produtos em Destaque 🔥</h2>
+<div class="title-container">
+    🔥 Produtos em Destaque 🔥
+</div>
 <div class="container">
     {% for produto in produtos_stock %}
     <a href="{% url 'produto_detalhe' produto_id=produto.produto_id %}" class="card">
@@ -181,7 +238,9 @@
 </div>
 
 <!-- Produtos Recentes -->
-<h2 style="text-align: center; margin: 20px 0; font-size: 2rem; color: #444;">Produtos adicionados recentemente</h2>
+<div class="title-container">
+    🆕 Produtos adicionados recentemente 🆕
+</div>
 <div class="container">
     {% for produto in produtos %}
     <a href="{% url 'produto_detalhe' produto_id=produto.produto_id %}" class="card">
@@ -200,8 +259,31 @@
             {% endif %}
         </div>
         <button {% if produto.quantidade_em_stock|default:0 == 0 %} disabled {% endif %}>Comprar Agora</button>
-
     </a>
     {% endfor %}
 </div>
+<!-- Script atualizado para alternar a seta -->
+<script>
+    function toggleFiltros() {
+        var filtros = document.getElementById("categorias");
+        var botao = document.querySelector(".toggle-button");
+        var arrow = document.getElementById("arrow");
+
+        if (filtros.style.display === "none" || filtros.style.display === "") {
+            filtros.style.display = "flex";
+            botao.innerText = "Esconder Filtros ";
+            arrow.innerHTML = "▲"; // Altera a seta para cima
+        } else {
+            filtros.style.display = "none";
+            botao.innerText = "Mostrar Filtros ";
+            arrow.innerHTML = "▼"; // Altera a seta para baixo
+        }
+        botao.appendChild(arrow); // Garante que a seta continue visível no botão
+    }
+
+    // Garante que os filtros estão escondidos ao carregar a página
+    document.addEventListener("DOMContentLoaded", function() {
+        document.getElementById("categorias").style.display = "none";
+    });
+</script>
 {% endblock %}

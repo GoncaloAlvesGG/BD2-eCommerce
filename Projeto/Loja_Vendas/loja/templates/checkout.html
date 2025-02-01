@@ -16,6 +16,7 @@
         width: 100%;
         max-width: 800px;
         box-sizing: border-box;
+        margin-top: 50px; /* Garante que o conteúdo fique abaixo da navbar */
     }
 
     .content {
@@ -26,7 +27,8 @@
     }
 
     .content h1 {
-        margin-top: -150px;
+        margin-top: 20px; /* Removendo o -150px para evitar sobreposição */
+        text-align: center;
     }
 
     .form {
@@ -38,15 +40,12 @@
     }
 
     .form .form-group {
-        width: 48%;
-        /* Definindo o tamanho das colunas */
+        width: 48%; /* Definindo o tamanho das colunas */
     }
 
     .form .btn {
-        display: block;
-        /* Faz o botão ocupar uma linha inteira */
-        margin: 20px auto 0;
-        /* Centraliza horizontalmente e adiciona espaço no topo */
+        display: block; /* Faz o botão ocupar uma linha inteira */
+        margin: 20px auto 0; /* Centraliza horizontalmente e adiciona espaço no topo */
     }
 </style>
 
@@ -58,13 +57,12 @@
 
         <!-- Formulário de Dados de Envio e Pagamento -->
         <form class="form mt-4">
-            <!-- Coluna 1 - Dados de Envio -->
             {% csrf_token %}
+            <!-- Coluna 1 - Dados de Envio -->
             <div class="form-group">
                 <label for="morada" class="form-label">Morada Completa</label>
                 <input type="text" class="form-control" id="morada" placeholder="Morada Completa">
             </div>
-
 
             <!-- Coluna 2 - Dados de Pagamento -->
             <div class="form-group">
@@ -109,21 +107,21 @@
             },
             body: `morada=${encodeURIComponent(morada)}`
         })
-            .then(response => {
-                if (!response.ok) throw new Error('Erro ao finalizar a compra');
-                return response.json();
-            })
-            .then(data => {
-                console.log(data);
-                if (data.success) {
-                    Swal.fire('Sucesso!', 'Compra finalizada com sucesso!', 'success').then(() => {
-                        window.location.href = '/perfil/';
-                    });
-                }
-            })
-            .catch(error => {
-                Swal.fire('Erro', `Não foi possível finalizar a compra: ${error}`, 'error');
-            });
+        .then(response => {
+            if (!response.ok) throw new Error('Erro ao finalizar a compra');
+            return response.json();
+        })
+        .then(data => {
+            console.log(data);
+            if (data.success) {
+                Swal.fire('Sucesso!', 'Compra finalizada com sucesso!', 'success').then(() => {
+                    window.location.href = '/perfil/';
+                });
+            }
+        })
+        .catch(error => {
+            Swal.fire('Erro', `Não foi possível finalizar a compra: ${error}`, 'error');
+        });
     }
 </script>
 
