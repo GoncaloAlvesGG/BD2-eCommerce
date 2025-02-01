@@ -37,8 +37,8 @@ CREATE OR REPLACE FUNCTION sp_Utilizador_UPDATE(
     p_utilizador_id INT,
     p_nome VARCHAR,
     p_email VARCHAR,
-    p_senha VARCHAR DEFAULT NULL,  -- Optional parameter
-    p_isAdmin BOOLEAN DEFAULT NULL  -- Optional parameter with a default value
+    p_senha VARCHAR DEFAULT NULL,  
+    p_isAdmin BOOLEAN DEFAULT NULL  
 ) RETURNS VOID AS $$
 BEGIN
     BEGIN
@@ -46,8 +46,8 @@ BEGIN
         SET 
             nome = p_nome,
             email = p_email,
-            senha = COALESCE(p_senha, senha),  -- If p_senha is NULL, retain the current value
-            isAdmin = COALESCE(p_isAdmin, isAdmin)  -- If p_isAdmin is NULL, retain the current value
+            senha = COALESCE(p_senha, senha),  
+            isAdmin = COALESCE(p_isAdmin, isAdmin)  
         WHERE utilizador_id = p_utilizador_id;
     EXCEPTION
         WHEN OTHERS THEN
@@ -975,6 +975,24 @@ BEGIN
     GROUP BY p.produto_id, p.nome, p.descricao, p.preco;
 END;
 $$ LANGUAGE plpgsql;
+
+--Obter todas as faturas_fornecedores
+CREATE OR REPLACE FUNCTION obter_faturas_fornecedor(fornecedor_id_param INT)
+RETURNS TABLE (
+    fatura_fornecedor_id INT,
+    fornecedor_id INT,
+    data_emissao TIMESTAMP,
+    valor_total DECIMAL(10, 2)
+) AS $$
+BEGIN
+    RETURN QUERY
+    SELECT f.fatura_fornecedor_id, f.fornecedor_id, f.data_emissao, f.valor_total
+    FROM fatura_fornecedor f
+    WHERE f.fornecedor_id = fornecedor_id;
+END;
+$$ LANGUAGE plpgsql;
+
+SELECT * FROM obter_faturas_fornecedor(2)
 
 --Views
 --View Encomendas
