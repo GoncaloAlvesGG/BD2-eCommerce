@@ -1155,3 +1155,13 @@ CREATE TRIGGER trigger_atualizar_stock_requisicao
 AFTER INSERT ON requisicao_produto
 FOR EACH ROW
 EXECUTE FUNCTION atualizar_stock_produto_requisicao();
+
+
+--Indices
+--Chaves Estrangeiras usadas com frequência
+CREATE INDEX idx_produto_categoria ON produto(categoria_id);
+CREATE INDEX idx_encomenda_utilizador ON encomenda(utilizador_id);
+CREATE INDEX idx_encomenda_estado ON encomenda(estado);
+
+--Irá ser utilizado com frequência para o login
+CREATE INDEX idx_utilizador_email ON utilizador(email);
