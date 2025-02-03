@@ -992,7 +992,29 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-SELECT * FROM obter_faturas_fornecedor(2)
+--Produtos recomendados
+CREATE OR REPLACE FUNCTION recomendar_produtos(p_produto_id INT, p_limite INT DEFAULT 3)
+RETURNS TABLE (
+    produto_id INT,
+    nome VARCHAR(100),
+    descricao TEXT,
+    preco DECIMAL(10,2),
+    categoria_id INT,
+    quantidade_em_stock INT,
+    data_adicao TIMESTAMP
+) AS $$
+BEGIN
+    RETURN QUERY
+    SELECT p.produto_id, p.nome, p.descricao, p.preco, p.categoria_id, p.quantidade_em_stock, p.data_adicao
+    FROM produto p
+    WHERE p.categoria_id = (SELECT produto.categoria_id FROM produto WHERE produto.produto_id = p_produto_id)
+    AND p.produto_id != p_produto_id
+    ORDER BY RANDOM()
+    LIMIT p_limite;
+END;
+$$ LANGUAGE plpgsql;
+
+SELECT * FROM recomendar_produtos(13);
 
 --Views
 --View Encomendas

@@ -115,6 +115,79 @@
     .modal-content {
         border-radius: 15px;
     }
+
+    /* Título da seção */
+    .recommendations-title {
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: #333;
+        text-align: center;
+        margin-top: 40px;
+        margin-bottom: 20px;
+    }
+
+    /* Layout horizontal para produtos recomendados */
+    .recommendations-container {
+        display: flex;
+        gap: 15px;
+        justify-content: center;
+        flex-wrap: wrap;
+        margin-bottom: 30px;
+    }
+
+    /* Estilo dos cards menores */
+    .recommendation-card {
+        display: flex;
+        align-items: center;
+        width: 350px;
+        height: 120px;
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+        text-decoration: none;
+        overflow: hidden;
+        transition: transform 0.2s ease-in-out;
+    }
+
+    .recommendation-card:hover {
+        transform: scale(1.05);
+    }
+
+    /* Imagem menor e retangular */
+    .recommendation-card img {
+        width: 120px;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    /* Informação do produto */
+    .recommendation-info {
+        flex: 1;
+        padding: 10px;
+        text-align: left;
+    }
+
+    .recommendation-info h3 {
+        font-size: 1rem;
+        margin: 0;
+        color: #333;
+    }
+
+    .recommendation-info p {
+        font-size: 0.9rem;
+        color: #666;
+        margin: 5px 0;
+        max-height: 40px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .recommendation-info .price {
+        font-size: 1rem;
+        font-weight: bold;
+        color: #228B22;
+    }
 </style>
 
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -138,6 +211,22 @@
         </div>
     </div>
 </div>
+
+{% if recomendacoes %}
+<h2 class="recommendations-title">Produtos Semelhantes</h2>
+<div class="recommendations-container">
+    {% for produto in recomendacoes %}
+    <a href="{% url 'produto_detalhe' produto_id=produto.produto_id %}" class="recommendation-card">
+        <img src="{% static 'images/monitor_escuro.jpg' %}" alt="{{ produto.nome }}">
+        <div class="recommendation-info">
+            <h3>{{ produto.nome }}</h3>
+            <p>{{ produto.descricao|default:"Descrição não disponível." }}</p>
+            <div class="price">{{ produto.preco }} €</div>
+        </div>
+    </a>
+    {% endfor %}
+</div>
+{% endif %}
 
 <script>
     function adicionarCarrinho(produto_id) {

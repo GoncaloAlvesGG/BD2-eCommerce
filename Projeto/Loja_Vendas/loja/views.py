@@ -25,6 +25,9 @@ def produto_detalhe(request, produto_id):
         cursor.execute("SELECT * FROM sp_Produto_READ(%s)", [produto_id])
         columns = [col[0] for col in cursor.description]
         result = cursor.fetchone()
+        cursor.execute("SELECT * FROM recomendar_produtos(%s)", [produto_id])
+        colunas = [col[0] for col in cursor.description] 
+        resultados = [dict(zip(colunas, linha)) for linha in cursor.fetchall()] 
     
     # Se o produto não for encontrado, levantar erro 404
     if not result:
@@ -34,7 +37,7 @@ def produto_detalhe(request, produto_id):
     produto = dict(zip(columns, result))
     
     # Renderizar o template e passar os dados
-    return render(request, 'produto_detalhe.html', {'produto': produto})
+    return render(request, 'produto_detalhe.html', {'produto': produto, 'recomendacoes': resultados})
 
 def encomenda(request, encomenda_id):
     utilizador_id = request.session.get('utilizador_id')
