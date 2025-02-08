@@ -301,6 +301,30 @@
         .dropdown-items.active {
             display: block;
         }
+
+        .profile-name {
+            text-align: center;
+            width: 100%;
+            padding: 10px;
+            color: white;
+        }
+        
+        .profile-name h4 {
+            color: white;
+            font-size: 1.2rem;
+            margin-bottom: 5px;
+        }
+        
+        .profile-name .email-text {
+            color: #aaa;
+            font-size: 0.9rem;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            max-width: 90%;
+            margin: 0 auto;
+            white-space: normal;
+        }
+        
     </style>
 </head>
 
@@ -320,12 +344,15 @@
         </div>
     </header>
 
+  
     <!-- Menu Hamburger -->
     <nav id="sideMenu">
         <div class="back-arrow" onclick="toggleMenu()">←</div>
         <div class="profile">
-            <h4>{{ nome }}</h4>
-            <p>{{ email }}</p>
+            <div class="profile-name">
+                <h3>{{ nome }}</h3>
+                <p class="email-text">{{ email }}</p>
+            </div>
         </div>
         <a href="{% url 'index' %}">Página Inicial</a>
         <div class="dropdown-toggle" onclick="toggleDropdown(this, event)">Produtos</div>
@@ -343,6 +370,7 @@
         {% endif %}
         <a href="{% url 'logout_view' %}" class="logout">Logout</a>
     </nav>
+
 
     <main>
         {% block content %}

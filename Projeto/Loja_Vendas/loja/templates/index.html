@@ -59,85 +59,82 @@
     }
     
 
-    /* Estilo dos produtos */
     .container {
         display: flex;
-        justify-content: center;
+        justify-content: space-between;
         align-items: stretch;
         flex-wrap: wrap;
         gap: 20px;
         padding: 20px;
-        width: 100vw;
-        box-sizing: border-box;
+        width: 100%;
+        max-width: 1400px;
+        margin: 0 auto;
     }
-
+    
     .card {
         display: flex;
         flex-direction: column;
-        justify-content: space-between;
-        position: relative;
-        text-decoration: none;
-        color: inherit;
         background-color: white;
-        border-radius: 10px;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        border-radius: 12px;
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
         overflow: hidden;
-        width: 300px;
-        height: 450px;
-        min-height: 400px;
+        width: 320px;
+        height: 480px; /* Altura fixa para todos os cards */
         text-align: center;
-        transition: transform 0.2s;
+        transition: transform 0.3s ease-in-out, box-shadow 0.3s;
+        padding: 15px;
     }
-
-    .card:hover {
-        transform: scale(1.05);
-    }
-
+    
     .card img {
         width: 100%;
-        height: 200px;
+        height: 220px;
         object-fit: cover;
+        border-radius: 8px;
     }
-
+    
     .card h3 {
-        font-size: 1.25rem;
-        margin: 10px 0;
+        font-size: 1.4rem;
         color: #444;
+        margin: 12px 0;
     }
-
+    
     .card p {
         font-size: 1rem;
-        color: #777;
-        padding: 0 10px;
-    }
-
-    .card .price {
-        font-size: 1.5rem;
-        font-weight: bold;
         color: #666;
+        padding: 0 15px;
+        height: 50px; /* Define um tamanho fixo para a descrição */
+        overflow: hidden;
+        text-overflow: ellipsis;
+        display: -webkit-box;
+        -webkit-line-clamp: 2; /* Limita a duas linhas */
+        -webkit-box-orient: vertical;
+    }
+    
+    .price {
+        font-size: 1.6rem;
+        font-weight: bold;
+        color: #d9534f;
         margin: 10px 0;
     }
-
+    
     .card button {
-        background-color: #228B22;
+        background-color: #198754;
         color: white;
         border: none;
-        padding: 10px 20px;
-        margin-bottom: 10px;
+        padding: 12px;
         cursor: pointer;
-        border-radius: 5px;
+        border-radius: 8px;
         font-size: 1rem;
+        transition: background-color 0.3s;
+        margin-top: auto; /* Mantém o botão sempre na parte inferior */
     }
-
+    
     .card button:hover {
-        background-color: #006400;
+        background-color: #218838;
     }
-
-    .card button:disabled {
-        background-color: #aaa;
-        cursor: not-allowed;
-    }
-
+    
+    
+    
     /* Tags de Destaque */
     .tag-novo,
     .tag-promocao {
@@ -184,7 +181,7 @@
 
     /* Container escuro para os títulos */
     .title-container {
-        background-color: #444; /* Cor mais escura */
+        background-color: #555; /* Cor mais escura */
         color: white;
         padding: 15px;
         text-align: center;
@@ -222,7 +219,6 @@
         <h3>{{ produto.nome }}</h3>
         <p>{{ produto.descricao|default:"Descrição não disponível." }}</p>
         <div class="price">
-            <span style="text-decoration: line-through; color: #777;">{{ produto.preco_antigo }} €</span>
             <strong style="color: #d9534f;">{{ produto.preco }} €</strong>
         </div>
         <div class="stock {% if produto.quantidade_em_stock == 0 %} esgotado {% endif %}">
@@ -239,7 +235,7 @@
 
 <!-- Produtos Recentes -->
 <div class="title-container">
-    🆕 Produtos adicionados recentemente 🆕
+    🆕 Produtos Adicionados Recentemente 🆕
 </div>
 <div class="container">
     {% for produto in produtos %}
