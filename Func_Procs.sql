@@ -657,8 +657,6 @@ BEGIN
     UPDATE encomenda
     SET estado = p_estado
     WHERE encomenda_id = p_encomenda_id;
-
-    -- Verifica se nenhuma linha foi afetada (nenhuma encomenda com esse id foi encontrada)
     IF NOT FOUND THEN
         RAISE EXCEPTION 'Encomenda com ID % não encontrada.', p_encomenda_id;
     END IF;
@@ -826,17 +824,6 @@ BEGIN
     END LOOP;
 END
 $$ LANGUAGE plpgsql;
-
-
-SELECT sp_Encomenda_Com_Itens_CREATE(
-    4, -- utilizador_id
-    'Rua Exemplo, 123', -- morada
-    'pendente', -- estado
-    '[ 
-        {"produto_id": 101, "quantidade": 2},
-        {"produto_id": 102, "quantidade": 1}
-    ]'::JSON -- itens
-);
 
 --Verificar Email Existe
 CREATE OR REPLACE FUNCTION VerificarLogin(
@@ -1014,8 +1001,6 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-SELECT * FROM recomendar_produtos(13);
-
 --Views
 --View Encomendas
 CREATE VIEW vw_encomendas_utilizador AS
@@ -1103,16 +1088,6 @@ CREATE TRIGGER trigger_atualizar_stock_itens
 AFTER INSERT ON itens_encomenda
 FOR EACH ROW
 EXECUTE FUNCTION atualizar_stock_produto();
-
-SELECT sp_Encomenda_Com_Itens_CREATE(
-    4, -- utilizador_id
-    'Rua Exemplo, 123', -- morada
-    'pendente', -- estado
-    '[ 
-        {"produto_id": 1, "quantidade": 2},
-        {"produto_id": 2, "quantidade": 1}
-    ]'::JSON -- itens
-);
 
 --Encomenda passa para enviada, é criada uma fatura automaticamente
 CREATE OR REPLACE FUNCTION criar_fatura()
