@@ -19,6 +19,61 @@ from .models import EncomendaView
 from openpyxl import Workbook
 from openpyxl.styles import Font, Alignment
 from openpyxl.utils import get_column_letter
+from django.views.decorators.csrf import csrf_exempt
+from pymongo import MongoClient
+
+# Conectar ao MongoDB
+client = MongoClient("mongodb://localhost:27017/")
+db = client["Loja_online"]
+wishlist_collection = db["wishlist"]
+
+def add_to_wishlist(request, produto_id):
+    """ Adiciona um produto à wishlist do usuário baseado no nome armazenado na sessão """
+    if request.method == "POST":
+        try:
+            # Verifica se o nome do usuário está na sessão
+            owner = request.session.get("nome")  # Obtém o nome da sessão
+            
+            if not owner:
+                return JsonResponse({"error": "Usuário não autenticado!"}, status=403)
+
+            data = json.loads(request.body)
+            nome = data.get("nome")
+
+            # Verifica se o produto já está na wishlist do usuário
+            if wishlist_collection.find_one({"produto_id": produto_id, "owner": owner}):
+                return JsonResponse({"message": "Produto já está na sua wishlist!"}, status=400)
+
+            # Adiciona ao MongoDB com o owner baseado na sessão
+            wishlist_collection.insert_one({
+                "produto_id": produto_id,
+                "nome": nome,
+                "owner": owner
+            })
+
+            return JsonResponse({"message": "Produto adicionado à sua wishlist!"}, status=200)
+
+        except Exception as e:
+            return JsonResponse({"error": str(e)}, status=500)
+
+def wishlist(request):
+    """ Busca apenas os produtos da wishlist do usuário logado """
+    owner = request.session.get("nome")  # Obtém o nome da sessão
+
+    if not owner:
+        return render(request, 'login.html', {'login_error': 'Por favor, faça login para acessar a wishlist.'})
+
+    # Filtra apenas os produtos do usuário autenticado
+    items = list(wishlist_collection.find({"owner": owner}, {"_id": 0}))
+
+    return render(request, "wishlist.html", {"items": items})
+
+
+def remove_from_wishlist(request, produto_id):
+    wishlist_collection.delete_one({"produto_id": produto_id})
+    return JsonResponse({"message": "Produto removido da wishlist!"})
+
+
 
 def produto_detalhe(request, produto_id):
     with connection.cursor() as cursor:
