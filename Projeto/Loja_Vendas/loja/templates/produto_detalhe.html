@@ -206,6 +206,9 @@
                 <a class="btn btn-success" onclick="adicionarCarrinho('{{ produto.produto_id }}')">
                     Adicionar ao Carrinho
                 </a>
+                <a class="btn btn-outline-danger mt-3" onclick="adicionarWishlist('{{ produto.produto_id }}', '{{ produto.nome }}')">
+                    ❤️ Adicionar à Wishlist
+                </a>
                 <a href="{% url 'index' %}" class="btn btn-secondary mt-3">Voltar à Loja</a>
             </div>
         </div>
@@ -254,6 +257,28 @@
                 console.log(error);
                 Swal.fire('Erro', `Não foi possível adicionar ao carrinho: ${error}`, 'error');
             });
+    }
+</script>
+<script>
+    function adicionarWishlist(produto_id, nome) {
+        fetch(`/wishlist/add/${produto_id}/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}', // Token CSRF para segurança
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                produto_id: produto_id,
+                nome: nome
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            Swal.fire('Wishlist', data.message, 'success');
+        })
+        .catch(error => {
+            Swal.fire('Erro', 'Não foi possível adicionar à wishlist.', 'error');
+        });
     }
 </script>
 
