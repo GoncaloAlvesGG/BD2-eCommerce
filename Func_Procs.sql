@@ -860,8 +860,6 @@ BEGIN
 END
 $$ LANGUAGE plpgsql;
 
-SELECT sp_Utilizador_UpdateIsAdmin(5, TRUE);
-
 --Ultimos 4 produtos adicionados
 CREATE OR REPLACE FUNCTION ultimos_produtos_adicionados()
 RETURNS TABLE (
@@ -888,8 +886,6 @@ BEGIN
     LIMIT 4;
 END;
 $$ LANGUAGE plpgsql;
-
-SELECT * FROM ultimos_produtos_adicionados();
 
 --Função Obter todas as categorias
 CREATE OR REPLACE FUNCTION todas_categorias()
@@ -975,7 +971,7 @@ BEGIN
     RETURN QUERY
     SELECT f.fatura_fornecedor_id, f.fornecedor_id, f.data_emissao, f.valor_total
     FROM fatura_fornecedor f
-    WHERE f.fornecedor_id = fornecedor_id;
+    WHERE f.fornecedor_id = fornecedor_id_param;
 END;
 $$ LANGUAGE plpgsql;
 
@@ -1026,10 +1022,6 @@ JOIN
 JOIN 
     utilizador u ON e.utilizador_id = u.utilizador_id; 
 	
-SELECT * 
-FROM vw_encomendas_utilizador
-WHERE encomenda_id = 6;
-
 --View Utilizador
 CREATE VIEW view_utilizador AS
 SELECT 

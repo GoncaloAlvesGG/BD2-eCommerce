@@ -65,8 +65,18 @@ def wishlist(request):
 
     # Filtra apenas os produtos do usuário autenticado
     items = list(wishlist_collection.find({"owner": owner}, {"_id": 0}))
+    produto_ids = tuple(produto["produto_id"] for produto in items)
+    produtos_detalhados = []
 
-    return render(request, "wishlist.html", {"items": items})
+    with connection.cursor() as cursor:
+        for produto_id in produto_ids:
+            cursor.execute("SELECT * FROM sp_Produto_READ(%s)", [produto_id])
+            colunas = [col[0] for col in cursor.description]  # Obter nomes das colunas
+            for row in cursor.fetchall():
+                produtos_detalhados.append(dict(zip(colunas, row)))
+
+
+    return render(request, "wishlist.html", {"items": produtos_detalhados})
 
 
 def remove_from_wishlist(request, produto_id):
