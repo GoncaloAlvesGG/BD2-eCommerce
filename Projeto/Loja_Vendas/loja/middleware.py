@@ -25,7 +25,7 @@ class AuthAndAdminMiddleware:
             '/fornecedores/',
         ]
         self.allowed_paths = [
-            '/login/', '/registo/'  # Apenas login e registo acessíveis sem autenticação
+            '/login/', '/registo/', '/recuperar/'  # Apenas login e registo acessíveis sem autenticação
         ]
 
     def __call__(self, request):

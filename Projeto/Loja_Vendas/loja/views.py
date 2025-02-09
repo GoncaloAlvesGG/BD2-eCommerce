@@ -21,6 +21,13 @@ from openpyxl.styles import Font, Alignment
 from openpyxl.utils import get_column_letter
 from django.views.decorators.csrf import csrf_exempt
 from pymongo import MongoClient
+from django.shortcuts import render, redirect
+from django.contrib.auth.models import User
+from django.contrib import messages
+from django.core.mail import send_mail
+from django.utils.crypto import get_random_string
+from django.conf import settings
+
 
 # Conectar ao MongoDB
 client = MongoClient("mongodb://localhost:27017/")
@@ -400,7 +407,35 @@ def dashboard_fornecedores(request):
     return render(request, 'dashboard_fornecedores.html', {'fornecedores': fornecedores})
 
 def recuperar_senha(request):
-    return render(request, 'recuperar_pass.html')
+    if request.method == "POST":
+        email = request.POST.get("email")
+
+        if not email:
+            messages.error(request, "Por favor, insira um email válido.")
+            return redirect("recuperar")
+
+        try:
+            user = User.objects.get(email=email)
+            nova_senha = get_random_string(length=8)  # Gera uma senha aleatória
+            user.set_password(nova_senha)
+            user.save()
+
+            # Enviar email com a nova senha
+            send_mail(
+                "Recuperação de Senha",
+                f"Sua nova palavra-passe é: {nova_senha}",
+                settings.DEFAULT_FROM_EMAIL,
+                [email],
+                fail_silently=False,
+            )
+
+            messages.success(request, "Uma nova palavra-passe foi enviada para o seu email.")
+            return redirect("login")
+
+        except User.DoesNotExist:
+            messages.error(request, "Email não encontrado na base de dados.")
+
+    return render(request, "recuperar_pass.html")
 
 def produtos_4recentes():
     with connection.cursor() as cursor:
