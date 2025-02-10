@@ -1,14 +1,12 @@
+from decimal import Decimal
 from django.shortcuts import render, redirect
-from django.contrib.auth.decorators import login_required
 from django.contrib.auth import logout
 from .models import *
 from django.contrib.auth.forms import UserChangeForm
-from .forms import UserSettingsForm
 from django.db import connection
 from django.http import Http404, JsonResponse
 from django.contrib import messages
 from collections import defaultdict
-from decimal import Decimal
 from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
 from django.http import HttpResponse
@@ -19,14 +17,14 @@ from .models import EncomendaView
 from openpyxl import Workbook
 from openpyxl.styles import Font, Alignment
 from openpyxl.utils import get_column_letter
-from django.views.decorators.csrf import csrf_exempt
 from pymongo import MongoClient
 from django.contrib.auth.models import User
 from django.core.mail import send_mail
-from django.utils.crypto import get_random_string
 from django.conf import settings 
 import string
 import random
+from datetime import datetime
+
 
 # Conectar ao MongoDB
 client = MongoClient("mongodb://localhost:27017/")
@@ -336,7 +334,7 @@ def dashboard_produtos(request):
         # Add the category name to the produto object
         produto.categoria_nome = categoria_nome
     
-    return render(request, 'dashboard_produtos.html', {'produtos': produtos, 'categorias': categorias, 'fornecedores': fornecedores})
+    return render(request, 'dashboard_produtos.html', {'produtos': produtos, 'categorias': categorias, 'fornecedores': fornecedores, 'categorias_json': json.dumps(categorias)})
 
 def get_product_data(produto_id):
     with connection.cursor() as cursor:
@@ -851,6 +849,23 @@ def delete_cliente(request):
 
     return JsonResponse({"success": False, "error": "Invalid request"}, status=400)
 
+def delete_produto(request):
+    if request.method == 'POST':
+        try:
+            print(request.POST) 
+            produto_id = request.POST['produto_id']
+
+            if not produto_id:
+                return JsonResponse({"success": False, "error": "Produto ID não fornecido"}, status=400)
+
+            with connection.cursor() as cursor:
+                cursor.callproc('sp_Produto_DELETE', [produto_id])
+            return JsonResponse({"success": True})
+        except Exception as e:
+            return JsonResponse({"success": False, "error": str(e)}, status=400)
+
+    return JsonResponse({"success": False, "error": "Invalid request"}, status=400)
+
 def ver_encomendas_clientes(request, utilizador_id):
     encomendas = obter_encomendas_utilizador(utilizador_id)  # Function to get orders by user
     return render(request, 'encomendas_table.html', {'encomendas': encomendas})
@@ -871,7 +886,8 @@ def requerir_produto(request):
             data = json.loads(request.body)
             produto_id = data.get('produto_id')
             quantidade = data.get('quantidade')
-            preco = data.get('preco')
+            preco_str = data.get('preco')
+            preco = preco_str.replace(",", ".")
             preco = (float(preco) * int(quantidade)) * 0.75 #Vamos assumir que os produtos são vendidos todos com uma margem de 25% de lucro
             horas_adicionais = random.randint(12, 24)
             data_rececao = datetime.now() + timedelta(hours=horas_adicionais)
@@ -912,25 +928,32 @@ def add_produto(request):
 
     return JsonResponse({"success": True})
 
+
 def update_produto(request):
     if request.method == 'POST':
         try:
-            cliente_id = request.POST['cliente_id']
+            # Obtém os dados do formulário
+            produto_id = int(request.POST['produto_id'])
             nome = request.POST['nome']
-            email = request.POST['email']
-            isAdmin = request.POST.get('isAdmin', 'false') == 'true'
-            senha = request.POST.get('senha', None) 
+            descricao = request.POST['descricao']
+            preco = Decimal(request.POST['preco'])  # Certifica-te de que o preço é convertido para decimal
+            categoria_id = int(request.POST['categoria'])
+            quantidade_em_stock = int(request.POST['quantidade'])
 
-            
+            # Chama a stored procedure com os dados recebidos
             with connection.cursor() as cursor:
-                cursor.callproc('sp_Utilizador_UPDATE', [cliente_id, nome, email, senha, isAdmin])
+                cursor.callproc('sp_Produto_UPDATE', [
+                    produto_id, nome, descricao, preco, categoria_id, quantidade_em_stock
+                ])
+
             return JsonResponse({"success": True})
+        
         except Exception as e:
             return JsonResponse({"success": False, "error": str(e)}, status=400)
 
     return JsonResponse({"success": False, "error": "Invalid request"}, status=400)
 
-from datetime import datetime
+
 
 def add_categoria(request):
     # Retrieve data from the POST request
@@ -965,7 +988,6 @@ def update_cliente(request):
 
     return JsonResponse({"success": False, "error": "Invalid request"}, status=400)
 
-from datetime import datetime
 
 def obter_encomendas_por_data(data_inicio, data_fim):
     # Convertendo as datas de string para o formato datetime, se necessário

@@ -49,6 +49,7 @@ urlpatterns = [
     path('dashboard/produtos/add', views.add_produto, name='add_produto'),
     path('dashboard/produtos/add_categoria', views.add_categoria, name='add_categoria'),
     path('dashboard/produtos/update', views.update_produto, name='update_produto'),
+    path('dashboard/produtos/delete', views.delete_produto, name='delete_produto'), 
     path('dashboard/produtos/requerir', views.requerir_produto, name='requerir_produto'),
     path('produtos_nunca_vendidos/', views.produtos_nunca_vendidos, name='produtos_nunca_vendidos'),
     path('top_5_produtos_mais_vendidos/', views.top_5_produtos_mais_vendidos, name='top_5_produtos_mais_vendidos'),

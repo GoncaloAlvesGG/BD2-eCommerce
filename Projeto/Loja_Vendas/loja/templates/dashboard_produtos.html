@@ -84,6 +84,9 @@
 </style>
 
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    var categorias = JSON.parse('{{ categorias_json|safe }}');
+</script>
 
 <div class="products-container">
     <div class="header">
@@ -120,7 +123,7 @@
                         onclick="requerirProduto('{{ produto.produto_id }}', '{{ produto.produto_nome }}', '{{ produto.preco }}')">Requerer</a>
                     <a href="{% url 'produto_detalhe' produto_id=produto.produto_id %}" class="btn-small">Detalhes</a>
                     <a class="btn-small"
-                        onclick="alterarProduto('{{ produto.produto_id }}', '{{ produto.nome }}', '{{ produto.descricao }}', '{{ produto.preco }}', '{{ produto.categoria_id }}', '{{ produto.quantidade_em_stock }}')">Alterar</a>
+                        onclick="alterarProduto('{{ produto.produto_id }}', '{{ produto.produto_nome }}', '{{ produto.descricao }}', '{{ produto.preco }}', '{{ produto.categoria_id }}', '{{ produto.quantidade_em_stock }}')">Alterar</a>
                     <a class="btn-small btn-danger" onclick="excluirProduto('{{ produto.produto_id }}')">Excluir</a>
                 </td>
             </tr>
@@ -296,38 +299,42 @@
 
     function alterarProduto(id, nome, descricao, preco, categoriaId, quantidade) {
         console.log(id, nome, descricao, preco, categoriaId, quantidade);
+
+
+        let categoriaOptions = categorias.map(cat =>
+            `<option value="${cat.categoria_id}" ${cat.categoria_id == categoriaId ? 'selected' : ''}>
+            ${cat.nome}
+        </option>`
+        ).join('');
+
         Swal.fire({
             title: 'Alterar Produto',
             html: `
-        <form id="form-alterar-produto">
-            <div style="margin-bottom: 10px;">
-                <label for="nome">Nome:</label><br>
-                <input type="text" id="nome" name="nome" class="swal2-input" value="${nome}" required>
-            </div>
-            <div style="margin-bottom: 10px;">
-                <label for="descricao">Descrição:</label><br>
-                <textarea id="descricao" name="descricao" class="swal2-input">${descricao}</textarea>
-            </div>
-            <div style="margin-bottom: 10px;">
-                <label for="preco">Preço (€):</label><br>
-                <input type="number" id="preco" name="preco" class="swal2-input" value="${preco}" required step="0.01">
-            </div>
-            <div style="margin-bottom: 10px;">
-                <label for="categoria">Categoria:</label><br>
-                <select id="categoria" name="categoria" class="swal2-input" required>
-                    {% for categoria in categorias %}
-                        <option value="{{ categoria.categoria_id }}" ${categoria.categoria_id == categoriaId ? 'selected' : ''}>
-                            {{ categoria.nome }}
-                        </option>
-                    {% endfor %}
-                </select>
-            </div>
-            <div style="margin-bottom: 10px;">
-                <label for="quantidade">Quantidade em Stock:</label><br>
-                <input type="number" id="quantidade" name="quantidade" class="swal2-input" value="${quantidade}" required>
-            </div>
-        </form>
-    `,
+            <form id="form-alterar-produto">
+                <div style="margin-bottom: 10px;">
+                    <label for="nome">Nome:</label><br>
+                    <input type="text" id="nome" name="nome" class="swal2-input" value="${nome}" required>
+                </div>
+                <div style="margin-bottom: 10px;">
+                    <label for="descricao">Descrição:</label><br>
+                    <textarea id="descricao" name="descricao" class="swal2-input">${descricao}</textarea>
+                </div>
+                <div style="margin-bottom: 10px;">
+                    <label for="preco">Preço (€):</label><br>
+                    <input type="number" id="preco" name="preco" class="swal2-input" value="${parseFloat(preco)}" required step="0.01">
+                </div>
+                <div style="margin-bottom: 10px;">
+                    <label for="categoria">Categoria:</label><br>
+                    <select id="categoria" name="categoria" class="swal2-input" required>
+                        ${categoriaOptions}
+                    </select>
+                </div>
+                <div style="margin-bottom: 10px;">
+                    <label for="quantidade">Quantidade em Stock:</label><br>
+                    <input type="number" id="quantidade" name="quantidade" class="swal2-input" value="${parseInt(quantidade)}" required>
+                </div>
+            </form>
+        `,
             confirmButtonText: 'Alterar',
             preConfirm: () => {
                 const form = document.getElementById('form-alterar-produto');
@@ -402,10 +409,10 @@
     }
 
     function verTop5ProdutosMaisVendidos() {
-    fetch('/top_5_produtos_mais_vendidos/')
-        .then(response => response.json())
-        .then(data => {
-            let tableHTML = `
+        fetch('/top_5_produtos_mais_vendidos/')
+            .then(response => response.json())
+            .then(data => {
+                let tableHTML = `
                 <table style="width:100%; border-collapse: collapse;">
                     <thead>
                         <tr style="border-bottom: 1px solid #ccc;">
@@ -417,33 +424,33 @@
                     <tbody>
             `;
 
-            data.forEach(item => {
-                tableHTML += `
+                data.forEach(item => {
+                    tableHTML += `
                     <tr>
                         <td style="padding: 8px; border-bottom: 1px solid #ccc;">${item.produto_id}</td>
                         <td style="padding: 8px; border-bottom: 1px solid #ccc;">${item.nome}</td>
                         <td style="padding: 8px; border-bottom: 1px solid #ccc;">${item.quantidade_total_vendida}</td>
                     </tr>
                 `;
-            });
+                });
 
-            tableHTML += `</tbody></table>`;
+                tableHTML += `</tbody></table>`;
 
-            Swal.fire({
-                title: 'Top 5 Produtos Mais Vendidos',
-                html: tableHTML,
-                width: '600px',
-                confirmButtonText: 'Fechar'
-            });
-        })
-        .catch(error => console.error('Erro:', error));
-}
+                Swal.fire({
+                    title: 'Top 5 Produtos Mais Vendidos',
+                    html: tableHTML,
+                    width: '600px',
+                    confirmButtonText: 'Fechar'
+                });
+            })
+            .catch(error => console.error('Erro:', error));
+    }
 
-function verCategoriasMaisVendidas() {
-    fetch('/categorias_mais_vendidas/')
-        .then(response => response.json())
-        .then(data => {
-            let tableHTML = `
+    function verCategoriasMaisVendidas() {
+        fetch('/categorias_mais_vendidas/')
+            .then(response => response.json())
+            .then(data => {
+                let tableHTML = `
                 <table style="width:100%; border-collapse: collapse;">
                     <thead>
                         <tr style="border-bottom: 1px solid #ccc;">
@@ -455,27 +462,60 @@ function verCategoriasMaisVendidas() {
                     <tbody>
             `;
 
-            data.forEach(item => {
-                tableHTML += `
+                data.forEach(item => {
+                    tableHTML += `
                     <tr>
                         <td style="padding: 8px; border-bottom: 1px solid #ccc;">${item.categoria_id}</td>
                         <td style="padding: 8px; border-bottom: 1px solid #ccc;">${item.categoria}</td>
                         <td style="padding: 8px; border-bottom: 1px solid #ccc;">${item.total_vendido}</td>
                     </tr>
                 `;
-            });
+                });
 
-            tableHTML += `</tbody></table>`;
+                tableHTML += `</tbody></table>`;
 
-            Swal.fire({
-                title: 'Categorias Mais Vendidas',
-                html: tableHTML,
-                width: '600px',
-                confirmButtonText: 'Fechar'
-            });
-        })
-        .catch(error => console.error('Erro:', error));
-}
+                Swal.fire({
+                    title: 'Categorias Mais Vendidas',
+                    html: tableHTML,
+                    width: '600px',
+                    confirmButtonText: 'Fechar'
+                });
+            })
+            .catch(error => console.error('Erro:', error));
+    }
+
+    function excluirProduto(produtoId) {
+        Swal.fire({
+            title: 'Tem certeza?',
+            text: 'Esta ação não pode ser desfeita! Todos os dados relacionados a este produto serão excluídos (Faturas, Encomendas, etc).',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Sim, excluir!',
+            cancelButtonText: 'Cancelar',
+        }).then(result => {
+            if (result.isConfirmed) {
+                fetch('{% url "delete_produto" %}', {
+                    method: 'POST',
+                    body: JSON.stringify({ produto_id: produtoId }),
+                    headers: {
+                        'X-CSRFToken': '{{ csrf_token }}',
+                        'Content-Type': 'application/json',
+                    },
+                }).then(response => {
+                    if (!response.ok) {
+                        throw new Error('Falha ao excluir produto');
+                    }
+                    return response.json();
+                }).then(() => {
+                    Swal.fire('Excluído!', 'O produto foi removido com sucesso.', 'success').then(() => {
+                        location.reload();
+                    });
+                }).catch(error => {
+                    Swal.fire('Erro', `Não foi possível excluir o produto: ${error}`, 'error');
+                });
+            }
+        });
+    }
 
 
 </script>

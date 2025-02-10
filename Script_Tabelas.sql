@@ -7,10 +7,10 @@ CREATE TABLE utilizador (
     data_registo TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-		CREATE TABLE categoria (
-			categoria_id SERIAL PRIMARY KEY,
-			nome VARCHAR(50) UNIQUE NOT NULL
-		);
+CREATE TABLE categoria (
+    categoria_id SERIAL PRIMARY KEY,
+    nome VARCHAR(50) UNIQUE NOT NULL
+);
 
 CREATE TABLE produto (
     produto_id SERIAL PRIMARY KEY,
@@ -20,16 +20,16 @@ CREATE TABLE produto (
     categoria_id INT NOT NULL,
     quantidade_em_stock INT NOT NULL,
     data_adicao TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (categoria_id) REFERENCES categoria(categoria_id)
+    FOREIGN KEY (categoria_id) REFERENCES categoria(categoria_id) ON DELETE CASCADE
 );
 
 CREATE TABLE encomenda (
     encomenda_id SERIAL PRIMARY KEY,
     utilizador_id INT NOT NULL,
-	morada VARCHAR(100)NOT NULL,
+    morada VARCHAR(100) NOT NULL,
     data_encomenda TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     estado VARCHAR(20) NOT NULL,  -- "pendente", "enviada"
-    FOREIGN KEY (utilizador_id) REFERENCES utilizador(utilizador_id)
+    FOREIGN KEY (utilizador_id) REFERENCES utilizador(utilizador_id) ON DELETE CASCADE
 );
 
 CREATE TABLE fatura (
@@ -37,7 +37,7 @@ CREATE TABLE fatura (
     encomenda_id INT NOT NULL,
     data_emissao TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     valor_total DECIMAL(10, 2) NOT NULL,
-    FOREIGN KEY (encomenda_id) REFERENCES encomenda(encomenda_id)
+    FOREIGN KEY (encomenda_id) REFERENCES encomenda(encomenda_id) ON DELETE CASCADE
 );
 
 CREATE TABLE itens_encomenda (
@@ -46,8 +46,8 @@ CREATE TABLE itens_encomenda (
     quantidade INT NOT NULL,
     preco_total DECIMAL(10, 2) NOT NULL,
     PRIMARY KEY (encomenda_id, produto_id),
-    FOREIGN KEY (encomenda_id) REFERENCES encomenda(encomenda_id),
-    FOREIGN KEY (produto_id) REFERENCES produto(produto_id)
+    FOREIGN KEY (encomenda_id) REFERENCES encomenda(encomenda_id) ON DELETE CASCADE,
+    FOREIGN KEY (produto_id) REFERENCES produto(produto_id) ON DELETE CASCADE
 );
 
 CREATE TABLE fornecedor (
@@ -64,8 +64,8 @@ CREATE TABLE requisicao_produto (
     quantidade INT NOT NULL,
     data_requisicao TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     data_rececao TIMESTAMP,
-    FOREIGN KEY (fornecedor_id) REFERENCES fornecedor(fornecedor_id),
-    FOREIGN KEY (produto_id) REFERENCES produto(produto_id)
+    FOREIGN KEY (fornecedor_id) REFERENCES fornecedor(fornecedor_id) ON DELETE CASCADE,
+    FOREIGN KEY (produto_id) REFERENCES produto(produto_id) ON DELETE CASCADE
 );
 
 CREATE TABLE fatura_fornecedor (
@@ -73,5 +73,5 @@ CREATE TABLE fatura_fornecedor (
     fornecedor_id INT NOT NULL,
     data_emissao TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     valor_total DECIMAL(10, 2) NOT NULL,
-    FOREIGN KEY (fornecedor_id) REFERENCES fornecedor(fornecedor_id)
+    FOREIGN KEY (fornecedor_id) REFERENCES fornecedor(fornecedor_id) ON DELETE CASCADE
 );
