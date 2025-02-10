@@ -131,7 +131,26 @@ def encomenda(request, encomenda_id):
 
 
 def admin_dashboard(request):
-    return render(request, 'dashboard.html')
+    with connection.cursor() as cursor:
+        cursor.execute("SELECT estado, total, ultima_encomenda FROM total_encomendas_por_estado")
+        estados_encomenda = cursor.fetchall()
+
+    total_pendentes = 0
+    total_enviadas_ultima_semana = 0
+    ultima_encomenda = None
+
+    for estado in estados_encomenda:
+        if estado[0] == 'pendente':
+            total_pendentes = estado[1]
+        elif estado[0] == 'enviada':
+            total_enviadas_ultima_semana = estado[1]
+        ultima_encomenda = estado[2]  # A última encomenda será atribuída para qualquer estado
+
+    return render(request, 'dashboard.html', {
+        'total_pendentes': total_pendentes,
+        'total_enviadas_ultima_semana': total_enviadas_ultima_semana,
+        'ultima_encomenda': ultima_encomenda,
+    })
 
 def obter_faturas_fornecedor(request, fornecedor_id):
     with connection.cursor() as cursor:
@@ -512,15 +531,6 @@ def top_5_produtos_mais_vendidos(request):
     produtos_lista = [{'produto_id': row[0], 'nome': row[1], 'quantidade_total_vendida': row[2]} for row in produtos]
 
     return JsonResponse(produtos_lista, safe=False)
-
-def total_encomendas_por_estado(request):
-    with connection.cursor() as cursor:
-        cursor.execute("SELECT * FROM total_encomendas_por_estado")
-        encomendas = cursor.fetchall()
-
-    encomendas_lista = [{'estado': row[0], 'total': row[1]} for row in encomendas]
-
-    return JsonResponse(encomendas_lista, safe=False)
 
 def top_clientes(request):
     with connection.cursor() as cursor:

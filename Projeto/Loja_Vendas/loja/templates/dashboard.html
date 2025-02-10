@@ -22,17 +22,39 @@
         margin-bottom: 20px;
     }
 
+    .total-encomendas {
+        display: flex;
+        justify-content: center;
+        gap: 15px;
+        margin-bottom: 20px;
+    }
+
+    .chip {
+        display: inline-block;
+        background-color: #228B22;
+        color: white;
+        padding: 10px 10px;
+        border-radius: 20px;
+        font-size: 1.1rem;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        margin: 0;
+    }
+
+    /* Destacar encomendas pendentes */
+    .chip.pendente {
+        background-color: #FF6347;
+        /* Vermelho forte */
+        font-weight: bold;
+    }
+
     .container {
         display: grid;
         grid-template-columns: repeat(4, 1fr);
-        /* Força 4 colunas */
         gap: 20px;
         padding: 20px;
         max-width: 1200px;
         margin: 0 auto;
     }
-
-
 
     .card {
         background-color: white;
@@ -102,6 +124,11 @@
 
 <div class="main-content">
     <h1>Bem-vindo ao Dashboard Admin</h1>
+    <div class="total-encomendas">
+        <span class="chip pendente">Total de Encomendas Pendentes: {{ total_pendentes }}</span>
+        <span class="chip">Data da Última Encomenda: {{ ultima_encomenda }}</span>
+        <span class="chip">Encomendas Enviadas na Última Semana: {{ total_enviadas_ultima_semana }}</span>
+    </div>
     <div class="container">
         <div class="card">
             <img src="{% static 'images/encomendas.png' %}" alt="Encomendas">

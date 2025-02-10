@@ -42,7 +42,6 @@ urlpatterns = [
     path('dashboard/encomendas/enviar/<int:encomenda_id>/', views.enviar_encomenda, name='enviar_encomenda'),
     path('dashboard/encomendas/filtrar/', views.filtrar_encomendas, name='filtrar_encomendas'),
     path('exportar-relatorio/', views.exportar_relatorio, name='exportar_relatorio'),
-    path('total_encomendas_por_estado/', views.total_encomendas_por_estado, name='total_encomendas_por_estado'),
     
     #PRODUTOS
     path('dashboard/produtos/', views.dashboard_produtos, name='dashboard_produtos'),
