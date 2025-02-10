@@ -174,37 +174,35 @@ def registo(request):
 
 def login(request):
     if request.method == "POST":
-        email = request.POST['email'].strip().lower()  # Garante que email não tem espaços e está em minúsculas
+        email = request.POST['email'].strip().lower()
         password = request.POST['password']
 
-        # Chamar a função armazenada para obter os dados do utilizador
         with connection.cursor() as cursor:
             cursor.callproc('VerificarLogin', [email])
             result = cursor.fetchone()
 
-        categorias = get_all_categories()  # Certifica-te de que esta função está definida corretamente
-
         if result is None:
-            # Email não encontrado
             return render(request, 'login.html', {'login_error': 'Email ou senha inválidos.'})
 
-        # Extrair dados retornados pela função
         utilizador_id, nome, email, stored_password_hash, is_admin = result
 
-        # Verificar a senha fornecida com o hash armazenado
-        if check_password(password, stored_password_hash):  # Usa check_password do Django
-            # Configurar sessão do utilizador
+        if check_password(password, stored_password_hash):
             request.session['utilizador_id'] = utilizador_id
             request.session['nome'] = nome
             request.session['email'] = email
             request.session['is_admin'] = is_admin
-            request.session['categorias'] = categorias
+
+            # Verifica se este utilizador deve redefinir a senha
+            if request.session.get("forcar_redefinir_senha") and request.session.get("utilizador_id_reset") == utilizador_id:
+                return redirect('alterar_senha')
+
             messages.success(request, f"Bem-vindo(a), {nome}!")
             return redirect('index')
-        else:
-            return render(request, 'login.html', {'login_error': 'Email ou senha inválidos.'})
+
+        return render(request, 'login.html', {'login_error': 'Email ou senha inválidos.'})
 
     return render(request, 'login.html')
+
 
 def logout_view(request):
     # Página inicial com a lista de produtos
@@ -413,7 +411,7 @@ def gerar_senha_aleatoria(length=8):
 
 def recuperar_senha(request):
     if request.method == "POST":
-        email = request.POST.get("email").strip().lower()  # Remove espaços e converte para minúsculas
+        email = request.POST.get("email").strip().lower()
 
         if not email:
             messages.error(request, "Por favor, insira um email válido.")
@@ -433,15 +431,18 @@ def recuperar_senha(request):
             try:
                 send_mail(
                     "Recuperação de Senha",
-                    f"Sua nova palavra-passe é: {nova_senha}",
+                    f"Sua nova palavra-passe temporária é: {nova_senha}. Por favor, altere-a no próximo login.",
                     settings.DEFAULT_FROM_EMAIL,
                     [email],
                     fail_silently=False,
                 )
 
-                # Guardar mensagem de sucesso na sessão e redirecionar para limpar mensagens anteriores
+                # Guarda na sessão que este utilizador precisa alterar a senha no próximo login
+                request.session["forcar_redefinir_senha"] = True
+                request.session["utilizador_id_reset"] = user[0]
+
                 request.session["recuperacao_sucesso"] = "Uma nova palavra-passe foi enviada para o seu email."
-                return redirect("recuperar")  # Redireciona para limpar o POST
+                return redirect("recuperar")
 
             except Exception as e:
                 messages.error(request, f"Erro ao enviar email: {str(e)}")
@@ -449,9 +450,35 @@ def recuperar_senha(request):
         else:
             messages.error(request, "Email não encontrado na base de dados.")
 
-    # Obtém a mensagem salva na sessão e remove-a após exibir
     sucesso_msg = request.session.pop("recuperacao_sucesso", None)
     return render(request, "recuperar_pass.html", {"sucesso_msg": sucesso_msg})
+
+def alterar_senha(request):
+    if "utilizador_id" not in request.session or "forcar_redefinir_senha" not in request.session:
+        return redirect("index")  # Se o utilizador não precisar redefinir a senha, redireciona para a home
+
+    if request.method == "POST":
+        nova_senha = request.POST.get("nova_senha")
+        confirmacao_senha = request.POST.get("confirmacao_senha")
+
+        if nova_senha != confirmacao_senha:
+            messages.error(request, "As palavras-passe não coincidem.")
+        else:
+            senha_hash = make_password(nova_senha)
+            utilizador_id = request.session["utilizador_id"]
+
+            with connection.cursor() as cursor:
+                cursor.execute("UPDATE utilizador SET senha = %s WHERE utilizador_id = %s", [senha_hash, utilizador_id])
+
+            # Remover flag da sessão para que não seja pedido novamente
+            del request.session["forcar_redefinir_senha"]
+            del request.session["utilizador_id_reset"]
+
+            messages.success(request, "Palavra-passe alterada com sucesso!")
+            return redirect("index")
+
+    return render(request, "alterar_senha.html")
+
 
 def produtos_4recentes():
     with connection.cursor() as cursor:

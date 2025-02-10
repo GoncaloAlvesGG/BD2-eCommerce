@@ -19,6 +19,7 @@ urlpatterns = [
 
     #PÁGINAS LOJA
     path('index/', views.index, name='index'),  # Página inicial
+    path('alterar_senha/', views.alterar_senha, name='alterar_senha'),
     path('produto/<int:produto_id>/', views.produto_detalhe, name='produto_detalhe'),  # Detalhe do produto
     path('procurar/', views.procurar_produto, name='procurar_produto'),
     path('loja/', views.mostrar_todos_produtos, name='loja'),
