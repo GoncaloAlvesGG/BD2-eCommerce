@@ -1057,6 +1057,60 @@ SELECT
     endereco
 FROM fornecedor;
 
+--View Top 5 mais vendidos
+CREATE VIEW top_5_produtos_mais_vendidos AS
+SELECT 
+    p.produto_id,
+    p.nome,
+    SUM(ie.quantidade) AS quantidade_total_vendida
+FROM itens_encomenda ie
+JOIN produto p ON ie.produto_id = p.produto_id
+GROUP BY p.produto_id, p.nome
+ORDER BY quantidade_total_vendida DESC
+LIMIT 5;
+
+--View total encomendas enviadas e pendentes
+CREATE VIEW total_encomendas_por_estado AS
+SELECT 
+    estado,
+    COUNT(*) AS total
+FROM encomenda
+WHERE estado IN ('pendente', 'enviada')
+GROUP BY estado;
+
+--View clientes com mais compras
+CREATE VIEW top_clientes AS
+SELECT 
+    u.utilizador_id,
+    u.nome,
+    COUNT(e.encomenda_id) AS total_encomendas
+FROM utilizador u
+JOIN encomenda e ON u.utilizador_id = e.utilizador_id
+GROUP BY u.utilizador_id, u.nome
+ORDER BY total_encomendas DESC
+LIMIT 10;
+
+--View categorias mais vendidas
+CREATE VIEW categorias_mais_vendidas AS
+SELECT 
+    c.categoria_id,
+    c.nome AS categoria,
+    SUM(ie.quantidade) AS total_vendido
+FROM itens_encomenda ie
+JOIN produto p ON ie.produto_id = p.produto_id
+JOIN categoria c ON p.categoria_id = c.categoria_id
+GROUP BY c.categoria_id, c.nome
+ORDER BY total_vendido DESC;
+
+--View produtos nunca vendidos
+CREATE VIEW produtos_nunca_vendidos AS
+SELECT 
+    p.produto_id,
+    p.nome
+FROM produto p
+LEFT JOIN itens_encomenda ie ON p.produto_id = ie.produto_id
+WHERE ie.produto_id IS NULL;
+
 --Trigger
 --Trigger quando uma venda é efetuada
 CREATE OR REPLACE FUNCTION atualizar_stock_produto()

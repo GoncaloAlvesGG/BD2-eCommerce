@@ -28,7 +28,7 @@ CREATE TABLE encomenda (
     utilizador_id INT NOT NULL,
 	morada VARCHAR(100)NOT NULL,
     data_encomenda TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    estado VARCHAR(20) NOT NULL,  -- "pendente", "enviada", "entregue"
+    estado VARCHAR(20) NOT NULL,  -- "pendente", "enviada"
     FOREIGN KEY (utilizador_id) REFERENCES utilizador(utilizador_id)
 );
 
