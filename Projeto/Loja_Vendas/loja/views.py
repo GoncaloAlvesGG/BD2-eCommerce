@@ -33,12 +33,39 @@ client = MongoClient("mongodb://localhost:27017/")
 db = client["Loja_online"]
 wishlist_collection = db["wishlist"]
 
+#Remove one unit from Cart
+def remove_one_from_cart(request, produto_id):
+    """Remove 1 unidade de um produto do carrinho. Se a quantidade for 1, remove o produto completamente."""
+    
+    # Verifica se o carrinho existe na sessão
+    if 'cart' not in request.session or not request.session['cart']:
+        return JsonResponse({'error': 'Carrinho vazio'}, status=400)
+    
+    cart = request.session['cart']
+    produto_id = str(produto_id)
+    
+    # Verifica se o produto está no carrinho
+    if produto_id not in cart:
+        return JsonResponse({'error': 'Produto não encontrado no carrinho'}, status=404)
+    
+    # Diminui a quantidade em 1
+    if cart[produto_id]['quantity'] > 1:
+        cart[produto_id]['quantity'] -= 1
+    else:
+        del cart[produto_id]  # Remove completamente se a quantidade for 1
+    
+    request.session.modified = True #Save
+
+    return JsonResponse({"message": "Produto atualizado no carrinho!", "cart": cart}, status=200)
+
+
 def hash_password(password):
     return bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
 
 def check_password(password, hashed_password):
     return bcrypt.checkpw(password.encode("utf-8"), hashed_password.encode("utf-8"))
 
+#WISHLIST
 def add_to_wishlist(request, produto_id):
     """ Adiciona um produto à wishlist do usuário baseado no nome armazenado na sessão """
     if request.method == "POST":

@@ -7,7 +7,6 @@
         display: flex;
         justify-content: center;
         min-height: 100vh;
-        /* Para que o conteúdo ocupe toda a altura da tela */
         margin: 0;
     }
 
@@ -16,9 +15,7 @@
         flex-direction: column;
         align-items: center;
         overflow-y: auto;
-        /* Permite rolagem vertical do container */
         width: 100%;
-        /* Define a largura da área do conteúdo */
     }
 
     .title {
@@ -29,15 +26,77 @@
 
     .table-container {
         margin-top: 20px;
-        /* Ajuste para a distância entre o título e a tabela */
         width: 100%;
     }
 
     .table {
         margin: 0 auto;
-        /* Centraliza a tabela horizontalmente */
+        width: 80%;
     }
+
+    .btn-remove {
+        background-color: #ccc;
+        color: black;
+        border: none;
+        padding: 5px 10px;
+        cursor: pointer;
+        border-radius: 5px;
+        font-weight: bold;
+        font-size: 0.9rem;
+        transition: background-color 0.3s;
+    }
+
+    .btn-remove:hover {
+        background-color: #999;
+    }
+
+    .action-column {
+    text-align: center;  /* Centraliza os botões na coluna */
+    vertical-align: middle; /* Alinha verticalmente com os outros elementos */
+    min-width: 80px; /* Garante que os botões não fiquem comprimidos */
+}
+
+.btn-remove-one {
+    background-color: #f0f0f0;
+    border: 1px solid #fc0505;
+    color: #fc0505;
+    font-size: 20px;
+    font-weight: bold;
+    width: 28px;
+    height: 28px;
+    line-height: 20px;
+    text-align: center;
+    border-radius: 50%;
+    cursor: pointer;
+    margin-right: 20px;
+}
+
+.btn-remove-one:hover {
+    background-color: #e0e0e0;
+    color: #fc0505;
+}
+
+.btn-remove {
+    background-color: transparent;
+    border: none;
+    color: #cc0000;
+    font-size: 20px;
+    cursor: pointer;
+    padding: 2px 6px;
+}
+
+.btn-remove:hover {
+    color: #990000;
+}
+
+
+
+
+
 </style>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 <div class="container">
     <h1 class="title">Carrinho de Compras</h1>
 
@@ -49,6 +108,7 @@
                     <th>Quantidade</th>
                     <th>Preço Unitário</th>
                     <th>Subtotal</th>
+                    <th>Ação</th>  <!-- Nova coluna para remover item -->
                 </tr>
             </thead>
             <tbody>
@@ -58,6 +118,11 @@
                     <td>{{ item.quantity }}</td>
                     <td>{{ item.price|floatformat:2 }} €</td>
                     <td>{{ item.subtotal|floatformat:2 }} €</td>
+                    <td class="action-column">
+                        <button class="btn-remove-one" onclick="removerUmaUnidade('{{ produto_id }}')">−</button>
+                    </td>
+                    
+                    
                 </tr>
                 {% endfor %}
             </tbody>
@@ -69,4 +134,28 @@
         <a href="{% url 'checkout' %}" class="btn btn-success btn-lg">Finalizar Compra</a>
     </div>
 </div>
+
+<script>
+    function removerUmaUnidade(produto_id) {
+        fetch(`/cart/remove-one/${produto_id}/`, {
+            method: 'DELETE',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            Swal.fire('Carrinho', data.message, 'success').then(() => {
+                location.reload();  // Atualiza a página para refletir as mudanças
+            });
+        })
+        .catch(error => {
+            Swal.fire('Erro', 'Não foi possível remover o item.', 'error');
+        });
+    }
+</script>
+
+
+
 {% endblock %}

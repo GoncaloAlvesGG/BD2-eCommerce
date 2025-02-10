@@ -16,6 +16,7 @@ urlpatterns = [
     path('logout/', views.logout_view, name='logout_view'),  # Página de logout
     path('registo/', views.registo, name='registo'),
     path('recuperar/', views.recuperar_senha, name="recuperar"),
+    path('cart/remove-one/<int:produto_id>/', views.remove_one_from_cart, name='remove_one_from_cart'),
 
     #PÁGINAS LOJA
     path('index/', views.index, name='index'),  # Página inicial
