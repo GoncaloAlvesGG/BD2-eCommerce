@@ -424,15 +424,13 @@ def recuperar_senha(request):
             user = cursor.fetchone()
 
         if user:
-            nova_senha = gerar_senha_aleatoria()  # Gera uma nova palavra-passe
-            senha_hash = make_password(nova_senha)  # Hash da nova palavra-passe para segurança
+            nova_senha = gerar_senha_aleatoria()
+            senha_hash = make_password(nova_senha)
 
-            # Atualiza a senha na base de dados
             with connection.cursor() as cursor:
                 cursor.execute("UPDATE utilizador SET senha = %s WHERE utilizador_id = %s", [senha_hash, user[0]])
 
             try:
-                # Enviar email com a nova senha
                 send_mail(
                     "Recuperação de Senha",
                     f"Sua nova palavra-passe é: {nova_senha}",
@@ -441,8 +439,9 @@ def recuperar_senha(request):
                     fail_silently=False,
                 )
 
-                messages.success(request, "Uma nova palavra-passe foi enviada para o seu email.")
-                return redirect("login")
+                # Guardar mensagem de sucesso na sessão e redirecionar para limpar mensagens anteriores
+                request.session["recuperacao_sucesso"] = "Uma nova palavra-passe foi enviada para o seu email."
+                return redirect("recuperar")  # Redireciona para limpar o POST
 
             except Exception as e:
                 messages.error(request, f"Erro ao enviar email: {str(e)}")
@@ -450,7 +449,9 @@ def recuperar_senha(request):
         else:
             messages.error(request, "Email não encontrado na base de dados.")
 
-    return render(request, "recuperar_pass.html")
+    # Obtém a mensagem salva na sessão e remove-a após exibir
+    sucesso_msg = request.session.pop("recuperacao_sucesso", None)
+    return render(request, "recuperar_pass.html", {"sucesso_msg": sucesso_msg})
 
 def produtos_4recentes():
     with connection.cursor() as cursor:

@@ -85,11 +85,20 @@
             color: white;
             border: none;
             transition: background-color 0.3s, transform 0.3s ease;
+            margin-top: 10px; /* Pequeno espaço acima do botão */
         }
 
         .btn-login:hover {
             background-color: #388e3c;
             transform: translateY(-3px);
+        }
+
+        .link-return {
+            font-size: 0.9rem;
+            color: #007bff;
+            text-decoration: none;
+            display: inline-block;
+            margin-top: 20px; /* AUMENTEI o espaço entre o botão e a frase */
         }
 
         .footer-text {
@@ -142,6 +151,9 @@
                 <!-- Botão de Envio -->
                 <button type="submit" class="btn btn-primary btn-login">Registar</button>
             </form>
+
+            <a href="{% url 'login' %}" class="link-return">Voltar para o login</a>
+
             <div class="footer-text">
                 <p>&copy; 2024 Loja de Vendas</p>
             </div>
