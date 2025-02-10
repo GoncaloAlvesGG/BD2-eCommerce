@@ -88,8 +88,11 @@
 <div class="products-container">
     <div class="header">
         <h2>Todos os Produtos</h2>
-        <button class="btn" onclick="adicionarProduto()">Adicionar Produto</button>
-        <button class="btn" onclick="adicionarCategoria()">Adicionar Categoria</button>
+        <button class="btn" onclick="verTop5ProdutosMaisVendidos()">Top 5 Produtos Mais Vendidos</button>
+        <button class="btn" onclick="verCategoriasMaisVendidas()">Categorias Mais Vendidas</button>
+        <button class="btn btn-danger" onclick="verProdutosNuncaVendidos()">Ver Produtos Nunca Vendidos</button>
+        <button class="btn btn-warning" onclick="adicionarProduto()">Adicionar Produto</button>
+        <button class="btn btn-warning" onclick="adicionarCategoria()">Adicionar Categoria</button>
     </div>
     <table class="products-table">
         <thead>
@@ -116,7 +119,8 @@
                     <a class="btn-small btn-warning"
                         onclick="requerirProduto('{{ produto.produto_id }}', '{{ produto.produto_nome }}', '{{ produto.preco }}')">Requerer</a>
                     <a href="{% url 'produto_detalhe' produto_id=produto.produto_id %}" class="btn-small">Detalhes</a>
-                    <a class="btn-small" onclick="alterarProduto('{{ produto.produto_id }}', '{{ produto.nome }}', '{{ produto.descricao }}', '{{ produto.preco }}', '{{ produto.categoria_id }}', '{{ produto.quantidade_em_stock }}')">Alterar</a>
+                    <a class="btn-small"
+                        onclick="alterarProduto('{{ produto.produto_id }}', '{{ produto.nome }}', '{{ produto.descricao }}', '{{ produto.preco }}', '{{ produto.categoria_id }}', '{{ produto.quantidade_em_stock }}')">Alterar</a>
                     <a class="btn-small btn-danger" onclick="excluirProduto('{{ produto.produto_id }}')">Excluir</a>
                 </td>
             </tr>
@@ -353,6 +357,125 @@
             }
         });
     }
+
+    function verProdutosNuncaVendidos() {
+        fetch('/produtos_nunca_vendidos/')
+            .then(response => response.json())
+            .then(data => {
+                if (data.length === 0) {
+                    Swal.fire('Nenhum produto encontrado', '', 'info');
+                    return;
+                }
+
+                // Criar a tabela em HTML dinamicamente
+                let tableHTML = `
+                <table style="width:100%; border-collapse: collapse;">
+                    <thead>
+                        <tr style="border-bottom: 1px solid #ccc;">
+                            <th style="padding: 8px; text-align: left;">ID</th>
+                            <th style="padding: 8px; text-align: left;">Nome</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+                data.forEach(produto => {
+                    tableHTML += `
+                    <tr>
+                        <td style="padding: 8px; border-bottom: 1px solid #ccc;">${produto.produto_id}</td>
+                        <td style="padding: 8px; border-bottom: 1px solid #ccc;">${produto.nome}</td>
+                    </tr>
+                `;
+                });
+
+                tableHTML += `</tbody></table>`;
+
+                // Mostrar no SweetAlert2
+                Swal.fire({
+                    title: 'Produtos Nunca Vendidos',
+                    html: tableHTML,
+                    width: '600px',
+                    confirmButtonText: 'Fechar'
+                });
+            })
+            .catch(error => console.error('Erro:', error));
+    }
+
+    function verTop5ProdutosMaisVendidos() {
+    fetch('/top_5_produtos_mais_vendidos/')
+        .then(response => response.json())
+        .then(data => {
+            let tableHTML = `
+                <table style="width:100%; border-collapse: collapse;">
+                    <thead>
+                        <tr style="border-bottom: 1px solid #ccc;">
+                            <th style="padding: 8px; text-align: left;">ID</th>
+                            <th style="padding: 8px; text-align: left;">Nome</th>
+                            <th style="padding: 8px; text-align: left;">Quantidade Vendida</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            data.forEach(item => {
+                tableHTML += `
+                    <tr>
+                        <td style="padding: 8px; border-bottom: 1px solid #ccc;">${item.produto_id}</td>
+                        <td style="padding: 8px; border-bottom: 1px solid #ccc;">${item.nome}</td>
+                        <td style="padding: 8px; border-bottom: 1px solid #ccc;">${item.quantidade_total_vendida}</td>
+                    </tr>
+                `;
+            });
+
+            tableHTML += `</tbody></table>`;
+
+            Swal.fire({
+                title: 'Top 5 Produtos Mais Vendidos',
+                html: tableHTML,
+                width: '600px',
+                confirmButtonText: 'Fechar'
+            });
+        })
+        .catch(error => console.error('Erro:', error));
+}
+
+function verCategoriasMaisVendidas() {
+    fetch('/categorias_mais_vendidas/')
+        .then(response => response.json())
+        .then(data => {
+            let tableHTML = `
+                <table style="width:100%; border-collapse: collapse;">
+                    <thead>
+                        <tr style="border-bottom: 1px solid #ccc;">
+                            <th style="padding: 8px; text-align: left;">ID</th>
+                            <th style="padding: 8px; text-align: left;">Categoria</th>
+                            <th style="padding: 8px; text-align: left;">Total Vendido</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            data.forEach(item => {
+                tableHTML += `
+                    <tr>
+                        <td style="padding: 8px; border-bottom: 1px solid #ccc;">${item.categoria_id}</td>
+                        <td style="padding: 8px; border-bottom: 1px solid #ccc;">${item.categoria}</td>
+                        <td style="padding: 8px; border-bottom: 1px solid #ccc;">${item.total_vendido}</td>
+                    </tr>
+                `;
+            });
+
+            tableHTML += `</tbody></table>`;
+
+            Swal.fire({
+                title: 'Categorias Mais Vendidas',
+                html: tableHTML,
+                width: '600px',
+                confirmButtonText: 'Fechar'
+            });
+        })
+        .catch(error => console.error('Erro:', error));
+}
 
 
 </script>

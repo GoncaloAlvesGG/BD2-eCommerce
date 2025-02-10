@@ -74,6 +74,14 @@
     .btn-danger:hover {
         background-color: #c82333;
     }
+
+    .btn-warning {
+        background-color: #3da526;
+    }
+
+    .btn-warning:hover {
+        background-color: #2b8e15;
+    }
 </style>
 
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -81,6 +89,7 @@
 <div class="products-container">
     <div class="header">
         <h2>Todos os Utilizadores</h2>
+        <button class="btn btn-warning" onclick="verTopClientes()">Clientes com Mais Compras</button>
     </div>
     <table class="products-table">
         <thead>
@@ -243,6 +252,44 @@
                     text: error.message,
                 });
             });
+    }
+
+    function verTopClientes() {
+        fetch('/top_clientes/')
+            .then(response => response.json())
+            .then(data => {
+                let tableHTML = `
+                <table style="width:100%; border-collapse: collapse;">
+                    <thead>
+                        <tr style="border-bottom: 1px solid #ccc;">
+                            <th style="padding: 8px; text-align: left;">ID</th>
+                            <th style="padding: 8px; text-align: left;">Nome</th>
+                            <th style="padding: 8px; text-align: left;">Total Encomendas</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+                data.forEach(item => {
+                    tableHTML += `
+                    <tr>
+                        <td style="padding: 8px; border-bottom: 1px solid #ccc;">${item.utilizador_id}</td>
+                        <td style="padding: 8px; border-bottom: 1px solid #ccc;">${item.nome}</td>
+                        <td style="padding: 8px; border-bottom: 1px solid #ccc;">${item.total_encomendas}</td>
+                    </tr>
+                `;
+                });
+
+                tableHTML += `</tbody></table>`;
+
+                Swal.fire({
+                    title: 'Clientes com Mais Compras',
+                    html: tableHTML,
+                    width: '600px',
+                    confirmButtonText: 'Fechar'
+                });
+            })
+            .catch(error => console.error('Erro:', error));
     }
 </script>
 

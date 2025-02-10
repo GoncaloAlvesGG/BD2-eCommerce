@@ -42,6 +42,7 @@ urlpatterns = [
     path('dashboard/encomendas/enviar/<int:encomenda_id>/', views.enviar_encomenda, name='enviar_encomenda'),
     path('dashboard/encomendas/filtrar/', views.filtrar_encomendas, name='filtrar_encomendas'),
     path('exportar-relatorio/', views.exportar_relatorio, name='exportar_relatorio'),
+    path('total_encomendas_por_estado/', views.total_encomendas_por_estado, name='total_encomendas_por_estado'),
     
     #PRODUTOS
     path('dashboard/produtos/', views.dashboard_produtos, name='dashboard_produtos'),
@@ -49,12 +50,16 @@ urlpatterns = [
     path('dashboard/produtos/add_categoria', views.add_categoria, name='add_categoria'),
     path('dashboard/produtos/update', views.update_produto, name='update_produto'),
     path('dashboard/produtos/requerir', views.requerir_produto, name='requerir_produto'),
+    path('produtos_nunca_vendidos/', views.produtos_nunca_vendidos, name='produtos_nunca_vendidos'),
+    path('top_5_produtos_mais_vendidos/', views.top_5_produtos_mais_vendidos, name='top_5_produtos_mais_vendidos'),
+    path('categorias_mais_vendidas/', views.categorias_mais_vendidas, name='categorias_mais_vendidas'),
 
     #CLIENTES
     path('dashboard/clientes/', views.dashboard_clientes, name='dashboard_clientes'),
     path('dashboard/clientes/update', views.update_cliente, name='update_cliente'),
     path('dashboard/clientes/delete', views.delete_cliente, name='delete_cliente'),
     path('dashboard/encomendas_cliente/<int:utilizador_id>/', views.ver_encomendas_clientes, name='ver_encomendas'),
+    path('top_clientes/', views.top_clientes, name='top_clientes'),
     
     #FORNECEDORES
     path('dashboard/fornecedores/', views.dashboard_fornecedores, name='dashboard_fornecedores'),
@@ -62,6 +67,6 @@ urlpatterns = [
     path('dashboard/fornecedores/update', views.update_fornecedor, name='update_fornecedor'),
     path('dashboard/fornecedores/delete', views.delete_fornecedor, name='delete_fornecedor'),
     path('fornecedores/<int:fornecedor_id>/produtos/', views.produtos_fornecedor, name='produtos_fornecedor'),
-    path('fornecedores/<int:fornecedor_id>/faturas/', views.obter_faturas_fornecedor, name='obter_faturas_fornecedor'),
-
+    path('fornecedores/<int:fornecedor_id>/faturas/', views.obter_faturas_fornecedor, name='obter_faturas_fornecedor'),   
+    
 ]

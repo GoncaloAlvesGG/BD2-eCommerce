@@ -27,13 +27,17 @@ from django.utils.crypto import get_random_string
 from django.conf import settings 
 import string
 import random
-from django.contrib.auth.hashers import make_password
-from django.contrib.auth.hashers import check_password
 
 # Conectar ao MongoDB
 client = MongoClient("mongodb://localhost:27017/")
 db = client["Loja_online"]
 wishlist_collection = db["wishlist"]
+
+def hash_password(password):
+    return bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
+
+def check_password(password, hashed_password):
+    return bcrypt.checkpw(password.encode("utf-8"), hashed_password.encode("utf-8"))
 
 def add_to_wishlist(request, produto_id):
     """ Adiciona um produto à wishlist do usuário baseado no nome armazenado na sessão """
@@ -181,6 +185,8 @@ def login(request):
             cursor.callproc('VerificarLogin', [email])
             result = cursor.fetchone()
 
+        categorias = get_all_categories()
+
         if result is None:
             return render(request, 'login.html', {'login_error': 'Email ou senha inválidos.'})
 
@@ -191,6 +197,7 @@ def login(request):
             request.session['nome'] = nome
             request.session['email'] = email
             request.session['is_admin'] = is_admin
+            request.session['categorias'] = categorias
 
             # Verifica se este utilizador deve redefinir a senha
             if request.session.get("forcar_redefinir_senha") and request.session.get("utilizador_id_reset") == utilizador_id:
@@ -423,7 +430,7 @@ def recuperar_senha(request):
 
         if user:
             nova_senha = gerar_senha_aleatoria()
-            senha_hash = make_password(nova_senha)
+            senha_hash = hash_password(nova_senha)
 
             with connection.cursor() as cursor:
                 cursor.execute("UPDATE utilizador SET senha = %s WHERE utilizador_id = %s", [senha_hash, user[0]])
@@ -464,7 +471,7 @@ def alterar_senha(request):
         if nova_senha != confirmacao_senha:
             messages.error(request, "As palavras-passe não coincidem.")
         else:
-            senha_hash = make_password(nova_senha)
+            senha_hash = hash_password(nova_senha)
             utilizador_id = request.session["utilizador_id"]
 
             with connection.cursor() as cursor:
@@ -486,6 +493,53 @@ def produtos_4recentes():
         colunas = [col[0] for col in cursor.description]
         resultados = [dict(zip(colunas, row)) for row in cursor.fetchall()]
     return resultados
+
+def produtos_nunca_vendidos(request):
+    with connection.cursor() as cursor:
+        cursor.execute("SELECT * FROM produtos_nunca_vendidos")
+        produtos = cursor.fetchall()
+
+    # Se a view tiver colunas fixas, podes formatar os dados assim:
+    produtos_lista = [{'produto_id': row[0], 'nome': row[1]} for row in produtos]
+
+    return JsonResponse(produtos_lista, safe=False)
+
+def top_5_produtos_mais_vendidos(request):
+    with connection.cursor() as cursor:
+        cursor.execute("SELECT * FROM top_5_produtos_mais_vendidos")
+        produtos = cursor.fetchall()
+
+    produtos_lista = [{'produto_id': row[0], 'nome': row[1], 'quantidade_total_vendida': row[2]} for row in produtos]
+
+    return JsonResponse(produtos_lista, safe=False)
+
+def total_encomendas_por_estado(request):
+    with connection.cursor() as cursor:
+        cursor.execute("SELECT * FROM total_encomendas_por_estado")
+        encomendas = cursor.fetchall()
+
+    encomendas_lista = [{'estado': row[0], 'total': row[1]} for row in encomendas]
+
+    return JsonResponse(encomendas_lista, safe=False)
+
+def top_clientes(request):
+    with connection.cursor() as cursor:
+        cursor.execute("SELECT * FROM top_clientes")
+        clientes = cursor.fetchall()
+
+    clientes_lista = [{'utilizador_id': row[0], 'nome': row[1], 'total_encomendas': row[2]} for row in clientes]
+
+    return JsonResponse(clientes_lista, safe=False)
+
+def categorias_mais_vendidas(request):
+    with connection.cursor() as cursor:
+        cursor.execute("SELECT * FROM categorias_mais_vendidas")
+        categorias = cursor.fetchall()
+
+    categorias_lista = [{'categoria_id': row[0], 'categoria': row[1], 'total_vendido': row[2]} for row in categorias]
+
+    return JsonResponse(categorias_lista, safe=False)
+
 
 def produtos_mais_stock():
     with connection.cursor() as cursor:
