@@ -8,6 +8,11 @@ CREATE OR REPLACE FUNCTION sp_Utilizador_CREATE(
     p_isAdmin BOOLEAN
 ) RETURNS VOID AS $$
 BEGIN
+    -- Verificar se o e-mail já existe
+    IF EXISTS (SELECT 1 FROM utilizador WHERE email = p_email) THEN
+        RAISE EXCEPTION 'Erro: O email já está em uso.';
+    END IF;
+
     -- Tentativa de inserção na tabela utilizador
     BEGIN
         INSERT INTO utilizador (nome, email, senha, isAdmin)

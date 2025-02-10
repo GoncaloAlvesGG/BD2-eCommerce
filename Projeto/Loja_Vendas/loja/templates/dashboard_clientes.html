@@ -187,7 +187,7 @@
                 </div>
                 <div style="margin-bottom: 10px;">
                     <label for="isAdmin">Administrador:</label><br>
-                    <input type="checkbox" id="isAdmin" name="isAdmin" class="swal2-input" ${isAdmin ? 'checked' : ''}>
+                    <input type="checkbox" id="isAdmin" name="isAdmin" class="swal2-input" ${isAdmin === true ? 'checked' : ''}>
                 </div>
             </form>
         `,
@@ -195,7 +195,27 @@
             preConfirm: () => {
                 const form = document.getElementById('form-alterar-cliente');
                 const formData = new FormData(form);
+                const email = form.email.value.trim();
+                const nome = form.nome.value.trim();
+
+                // Validação do e-mail
+                const emailPattern = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/;
+                if (!emailPattern.test(email)) {
+                    Swal.showValidationMessage('Por favor, insira um e-mail válido');
+                    return false;
+                }
+
+                // Validação do nome (pode ser adicionado mais verificações se necessário)
+                if (nome.length < 3) {
+                    Swal.showValidationMessage('O nome deve ter pelo menos 3 caracteres');
+                    return false;
+                }
+
+                // Verifica se o checkbox "isAdmin" está marcado e adiciona o valor adequado
+                const isAdmin = form.isAdmin.checked ? 'true' : 'false';
+
                 formData.append('cliente_id', id);
+                formData.append('isAdmin', isAdmin);  // Adiciona explicitamente o valor do isAdmin
 
                 return fetch('{% url "update_cliente" %}', {
                     method: 'POST',

@@ -144,6 +144,22 @@
             preConfirm: () => {
                 const form = document.getElementById('form-adicionar-fornecedor');
                 const formData = new FormData(form);
+                const nome = form.nome.value.trim();
+                const contacto = form.contacto.value.trim();
+                const endereco = form.endereco.value.trim();
+                if (nome.length < 3) {
+                    Swal.showValidationMessage('O nome da empresa deve ter pelo menos 3 caracteres.');
+                    return false;
+                }
+
+                const telefoneRegex = /^(?:\+|00)[0-9]{1,4}[0-9]{6,10}$/;
+                const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+
+                if (!telefoneRegex.test(contacto) && !emailRegex.test(contacto)) {
+                    Swal.showValidationMessage('O contacto deve ser um número de telemóvel válido (com indicativo) ou um email.');
+                    return false;
+                }
+
                 return fetch('{% url "add_fornecedor" %}', {
                     method: 'POST',
                     body: formData,
@@ -191,6 +207,24 @@
             preConfirm: () => {
                 const form = document.getElementById('form-alterar-fornecedor');
                 const formData = new FormData(form);
+                const nome = form.nome.value.trim();
+                const contacto = form.contacto.value.trim();
+
+                // Validação do nome (mínimo de 3 caracteres)
+                if (nome.length < 3) {
+                    Swal.showValidationMessage('O nome da empresa deve ter pelo menos 3 caracteres.');
+                    return false;
+                }
+
+                // Validação do contacto (deve ser email ou número de telemóvel)
+                const telefoneRegex = /^(?:\+|00)[0-9]{1,4}[0-9]{6,10}$/;
+                const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+
+                if (!telefoneRegex.test(contacto) && !emailRegex.test(contacto)) {
+                    Swal.showValidationMessage('O contacto deve ser um número de telemóvel válido (com indicativo) ou um email.');
+                    return false;
+                }
+
                 formData.append('fornecedor_id', id);
 
                 return fetch('{% url "update_fornecedor" %}', {

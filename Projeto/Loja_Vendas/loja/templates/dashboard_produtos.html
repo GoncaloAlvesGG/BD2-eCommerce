@@ -181,10 +181,32 @@
             preConfirm: () => {
                 const form = document.getElementById('form-adicionar-produto');
                 const formData = new FormData(form);
+                const nome = form.nome.value.trim();
+                const preco = form.preco.value;
+                const fornecedor = form.fornecedor.value;
+                const quantidade = form.quantidade.value;
 
-                // Depuração: logando os dados do formulário
-                for (let [key, value] of formData.entries()) {
-                    console.log(`${key}: ${value}`);
+                if (nome.length < 3) {
+                    Swal.showValidationMessage('O nome deve ter pelo menos 3 caracteres');
+                    return false;
+                }
+
+                // Validação do preço (não pode ser nulo ou menor que 0)
+                if (preco <= 0) {
+                    Swal.showValidationMessage('O preço não pode ser nulo ou menor que 0');
+                    return false;
+                }
+
+                // Validação do fornecedor (precisa ser selecionado)
+                if (!fornecedor) {
+                    Swal.showValidationMessage('Selecione um fornecedor');
+                    return false;
+                }
+
+                // Validação da quantidade (não pode ser nula ou menor que 0)
+                if (quantidade <= 0) {
+                    Swal.showValidationMessage('A quantidade não pode ser nula ou menor que 0');
+                    return false;
                 }
 
                 return fetch('{% url "add_produto" %}', {
@@ -224,6 +246,13 @@
             confirmButtonText: 'Adicionar',
             preConfirm: () => {
                 const form = document.getElementById('form-adicionar-categoria');
+                const nomeCategoria = form.nome.value.trim();
+
+                // Verifica se o nome da categoria tem pelo menos 3 caracteres
+                if (nomeCategoria.length < 3) {
+                    Swal.showValidationMessage('O nome da categoria deve ter pelo menos 3 caracteres');
+                    return false;
+                }
                 const formData = new FormData(form);
                 return fetch('{% url "add_categoria" %}', {
                     method: 'POST',
@@ -300,11 +329,10 @@
     function alterarProduto(id, nome, descricao, preco, categoriaId, quantidade) {
         console.log(id, nome, descricao, preco, categoriaId, quantidade);
 
-
         let categoriaOptions = categorias.map(cat =>
             `<option value="${cat.categoria_id}" ${cat.categoria_id == categoriaId ? 'selected' : ''}>
-            ${cat.nome}
-        </option>`
+        ${cat.nome}
+    </option>`
         ).join('');
 
         Swal.fire({
@@ -313,7 +341,7 @@
             <form id="form-alterar-produto">
                 <div style="margin-bottom: 10px;">
                     <label for="nome">Nome:</label><br>
-                    <input type="text" id="nome" name="nome" class="swal2-input" value="${nome}" required>
+                    <input type="text" id="nome" name="nome" class="swal2-input" value="${nome}" required minlength="3" title="O nome deve ter pelo menos 3 caracteres">
                 </div>
                 <div style="margin-bottom: 10px;">
                     <label for="descricao">Descrição:</label><br>
@@ -321,7 +349,7 @@
                 </div>
                 <div style="margin-bottom: 10px;">
                     <label for="preco">Preço (€):</label><br>
-                    <input type="number" id="preco" name="preco" class="swal2-input" value="${parseFloat(preco)}" required step="0.01">
+                    <input type="number" id="preco" name="preco" class="swal2-input" value="${parseFloat(preco)}" required step="0.01" min="0" title="O preço não pode ser negativo">
                 </div>
                 <div style="margin-bottom: 10px;">
                     <label for="categoria">Categoria:</label><br>
@@ -331,13 +359,36 @@
                 </div>
                 <div style="margin-bottom: 10px;">
                     <label for="quantidade">Quantidade em Stock:</label><br>
-                    <input type="number" id="quantidade" name="quantidade" class="swal2-input" value="${parseInt(quantidade)}" required>
+                    <input type="number" id="quantidade" name="quantidade" class="swal2-input" value="${parseInt(quantidade)}" required min="1" title="A quantidade não pode ser menor que 1">
                 </div>
             </form>
         `,
             confirmButtonText: 'Alterar',
             preConfirm: () => {
                 const form = document.getElementById('form-alterar-produto');
+                const nome = form.nome.value.trim();
+                const preco = form.preco.value;
+                const categoria = form.categoria.value;
+                const quantidade = form.quantidade.value;
+
+                // Validação do nome (pelo menos 3 caracteres)
+                if (nome.length < 3) {
+                    Swal.showValidationMessage('O nome deve ter pelo menos 3 caracteres');
+                    return false;
+                }
+
+                // Validação do preço (não pode ser nulo ou menor que 0)
+                if (preco <= 0) {
+                    Swal.showValidationMessage('O preço não pode ser nulo ou menor que 0');
+                    return false;
+                }
+
+                // Validação da quantidade (não pode ser nula ou menor que 0)
+                if (quantidade <= 0) {
+                    Swal.showValidationMessage('A quantidade não pode ser nula ou menor que 0');
+                    return false;
+                }
+
                 const formData = new FormData(form);
                 formData.append('produto_id', id);
 
@@ -484,35 +535,46 @@
             .catch(error => console.error('Erro:', error));
     }
 
-    function excluirProduto(produtoId) {
+    function excluirProduto(id) {
         Swal.fire({
-            title: 'Tem certeza?',
+            title: 'Tem a certeza?',
             text: 'Esta ação não pode ser desfeita! Todos os dados relacionados a este produto serão excluídos (Faturas, Encomendas, etc).',
             icon: 'warning',
             showCancelButton: true,
+            confirmButtonColor: '#dc3545',
+            cancelButtonColor: '#6c757d',
             confirmButtonText: 'Sim, excluir!',
             cancelButtonText: 'Cancelar',
         }).then(result => {
             if (result.isConfirmed) {
+                const formData = new FormData();
+                formData.append('produto_id', id);
+
                 fetch('{% url "delete_produto" %}', {
                     method: 'POST',
-                    body: JSON.stringify({ produto_id: produtoId }),
+                    body: formData,
                     headers: {
                         'X-CSRFToken': '{{ csrf_token }}',
-                        'Content-Type': 'application/json',
                     },
-                }).then(response => {
-                    if (!response.ok) {
-                        throw new Error('Falha ao excluir produto');
-                    }
-                    return response.json();
-                }).then(() => {
-                    Swal.fire('Excluído!', 'O produto foi removido com sucesso.', 'success').then(() => {
-                        location.reload();
+                })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Falha ao excluir produto');
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        if (data.success) {
+                            Swal.fire('Excluído!', 'O produto foi excluído com sucesso.', 'success').then(() => {
+                                location.reload();
+                            });
+                        } else {
+                            Swal.fire('Erro!', data.error || 'Falha ao excluir produto.', 'error');
+                        }
+                    })
+                    .catch(error => {
+                        Swal.fire('Erro!', `Erro: ${error.message}`, 'error');
                     });
-                }).catch(error => {
-                    Swal.fire('Erro', `Não foi possível excluir o produto: ${error}`, 'error');
-                });
             }
         });
     }

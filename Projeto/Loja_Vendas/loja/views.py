@@ -3,7 +3,7 @@ from django.shortcuts import render, redirect
 from django.contrib.auth import logout
 from .models import *
 from django.contrib.auth.forms import UserChangeForm
-from django.db import connection
+from django.db import IntegrityError, connection
 from django.http import Http404, JsonResponse
 from django.contrib import messages
 from collections import defaultdict
@@ -211,13 +211,19 @@ def registo(request):
         # Gerar o hash da senha com bcrypt
         password_hash = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
         
-        # Chamar a stored procedure
-        with connection.cursor() as cursor:
-            cursor.callproc('sp_Utilizador_CREATE', [nome, email, password_hash, isAdmin])
-        
-        messages.success(request, "Utilizador registado com sucesso!")
-        return redirect('login')
-    
+        try:
+            # Chamar a stored procedure
+            with connection.cursor() as cursor:
+                cursor.callproc('sp_Utilizador_CREATE', [nome, email, password_hash, isAdmin])
+            
+            messages.success(request, "Utilizador registado com sucesso!")
+            return redirect('login')
+
+        except Exception as e:
+            # Extrair apenas a mensagem de erro relevante (antes de "CONTEXT")
+            error_message = str(e).split('CONTEXT:')[0].strip()
+            messages.error(request, error_message)  # Exibir a mensagem de erro no frontend
+
     return render(request, 'registo.html')
 
 def login(request):
@@ -263,6 +269,8 @@ def logout_view(request):
 def index(request):
     produtos = produtos_4recentes()
     produtos_stock = produtos_mais_stock()
+    categorias = get_all_categories()
+    request.session['categorias'] = categorias
     return render(request, 'index.html', {'produtos': produtos, 'produtos_stock': produtos_stock})
 
 def procurar_produto(request):
@@ -783,7 +791,7 @@ def add_fornecedor(request):
     endereco = request.POST['endereco']
     with connection.cursor() as cursor:
             cursor.callproc('sp_Fornecedor_CREATE', [nome, contacto, endereco])
-            messages.success(request, "Utilizador registado com sucesso!")
+            messages.success(request, "Fornecedor registado com sucesso!")
             return JsonResponse({"success": True})
 
     return JsonResponse({"success": False, "error": "Invalid request"}, status=400)
@@ -910,10 +918,11 @@ def add_produto(request):
 
     nome = request.POST['nome']
     descricao = request.POST.get('descricao', '')
-    preco = request.POST['preco']
+    preco_str = request.POST['preco']
     categoria_id = request.POST['categoria']
     fornecedor_id = request.POST['fornecedor']
     quantidade = request.POST['quantidade']
+    preco = preco_str.replace(",", ".")
     preco_fatura = (float(preco) * int(quantidade)) * 0.75 #Vamos assumir que os produtos são vendidos todos com uma margem de 25% de lucro
 
     # Use a stored procedure to insert the product data (replace with actual procedure if needed)
