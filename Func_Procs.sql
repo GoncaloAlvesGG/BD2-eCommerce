@@ -1069,14 +1069,17 @@ GROUP BY p.produto_id, p.nome
 ORDER BY quantidade_total_vendida DESC
 LIMIT 5;
 
---View total encomendas enviadas e pendentes
+--View total pendentes, enviadas na última semana e data da última encomenda pendente ou enviada
 CREATE VIEW total_encomendas_por_estado AS
 SELECT 
     estado,
-    COUNT(*) AS total
+    COUNT(*) AS total,
+    (SELECT MAX(data_encomenda) FROM encomenda) AS ultima_encomenda
 FROM encomenda
-WHERE estado IN ('pendente', 'enviada')
+WHERE estado = 'pendente'
+   OR (estado = 'enviada' AND data_encomenda >= CURRENT_DATE - INTERVAL '7 days')
 GROUP BY estado;
+
 
 --View clientes com mais compras
 CREATE VIEW top_clientes AS
