@@ -21,13 +21,14 @@ from openpyxl.styles import Font, Alignment
 from openpyxl.utils import get_column_letter
 from django.views.decorators.csrf import csrf_exempt
 from pymongo import MongoClient
-from django.shortcuts import render, redirect
 from django.contrib.auth.models import User
-from django.contrib import messages
 from django.core.mail import send_mail
 from django.utils.crypto import get_random_string
-from django.conf import settings
-
+from django.conf import settings 
+import string
+import random
+from django.contrib.auth.hashers import make_password
+from django.contrib.auth.hashers import check_password
 
 # Conectar ao MongoDB
 client = MongoClient("mongodb://localhost:27017/")
@@ -173,16 +174,15 @@ def registo(request):
 
 def login(request):
     if request.method == "POST":
-        email = request.POST['email']
+        email = request.POST['email'].strip().lower()  # Garante que email não tem espaços e está em minúsculas
         password = request.POST['password']
 
-
-        # Chamar a função para obter os dados do utilizador
+        # Chamar a função armazenada para obter os dados do utilizador
         with connection.cursor() as cursor:
             cursor.callproc('VerificarLogin', [email])
             result = cursor.fetchone()
 
-        categorias = get_all_categories()
+        categorias = get_all_categories()  # Certifica-te de que esta função está definida corretamente
 
         if result is None:
             # Email não encontrado
@@ -192,8 +192,8 @@ def login(request):
         utilizador_id, nome, email, stored_password_hash, is_admin = result
 
         # Verificar a senha fornecida com o hash armazenado
-        if bcrypt.checkpw(password.encode('utf-8'), stored_password_hash.encode('utf-8')):
-            # Configurar sessão ou redirecionar
+        if check_password(password, stored_password_hash):  # Usa check_password do Django
+            # Configurar sessão do utilizador
             request.session['utilizador_id'] = utilizador_id
             request.session['nome'] = nome
             request.session['email'] = email
@@ -406,33 +406,48 @@ def dashboard_fornecedores(request):
     fornecedores = FornecedorView.objects.all()
     return render(request, 'dashboard_fornecedores.html', {'fornecedores': fornecedores})
 
+def gerar_senha_aleatoria(length=8):
+    """ Gera uma senha aleatória segura. """
+    caracteres = string.ascii_letters + string.digits
+    return ''.join(random.choice(caracteres) for _ in range(length))
+
 def recuperar_senha(request):
     if request.method == "POST":
-        email = request.POST.get("email")
+        email = request.POST.get("email").strip().lower()  # Remove espaços e converte para minúsculas
 
         if not email:
             messages.error(request, "Por favor, insira um email válido.")
             return redirect("recuperar")
 
-        try:
-            user = User.objects.get(email=email)
-            nova_senha = get_random_string(length=8)  # Gera uma senha aleatória
-            user.set_password(nova_senha)
-            user.save()
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT utilizador_id FROM utilizador WHERE LOWER(email) = %s", [email])
+            user = cursor.fetchone()
 
-            # Enviar email com a nova senha
-            send_mail(
-                "Recuperação de Senha",
-                f"Sua nova palavra-passe é: {nova_senha}",
-                settings.DEFAULT_FROM_EMAIL,
-                [email],
-                fail_silently=False,
-            )
+        if user:
+            nova_senha = gerar_senha_aleatoria()  # Gera uma nova palavra-passe
+            senha_hash = make_password(nova_senha)  # Hash da nova palavra-passe para segurança
 
-            messages.success(request, "Uma nova palavra-passe foi enviada para o seu email.")
-            return redirect("login")
+            # Atualiza a senha na base de dados
+            with connection.cursor() as cursor:
+                cursor.execute("UPDATE utilizador SET senha = %s WHERE utilizador_id = %s", [senha_hash, user[0]])
 
-        except User.DoesNotExist:
+            try:
+                # Enviar email com a nova senha
+                send_mail(
+                    "Recuperação de Senha",
+                    f"Sua nova palavra-passe é: {nova_senha}",
+                    settings.DEFAULT_FROM_EMAIL,
+                    [email],
+                    fail_silently=False,
+                )
+
+                messages.success(request, "Uma nova palavra-passe foi enviada para o seu email.")
+                return redirect("login")
+
+            except Exception as e:
+                messages.error(request, f"Erro ao enviar email: {str(e)}")
+
+        else:
             messages.error(request, "Email não encontrado na base de dados.")
 
     return render(request, "recuperar_pass.html")
