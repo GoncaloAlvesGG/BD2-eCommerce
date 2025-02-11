@@ -141,6 +141,13 @@ def produto_detalhe(request, produto_id):
     # Renderizar o template e passar os dados
     return render(request, 'produto_detalhe.html', {'produto': produto, 'recomendacoes': resultados})
 
+def recomendar_produtos_user(user_id):
+    with connection.cursor() as cursor:
+        cursor.execute("SELECT * FROM recomendar_produtos_user(%s);", [user_id])
+        columns = [col[0] for col in cursor.description]
+        results = [dict(zip(columns, row)) for row in cursor.fetchall()]
+    return results
+
 def encomenda(request, encomenda_id):
     utilizador_id = request.session.get('utilizador_id')
     is_admin = request.session.get('is_admin', False)
@@ -267,11 +274,14 @@ def logout_view(request):
     return render(request, "login.html")
 
 def index(request):
+
     produtos = produtos_4recentes()
     produtos_stock = produtos_mais_stock()
     categorias = get_all_categories()
+    utilizador_id = request.session.get('utilizador_id')
+    produtos_user = recomendar_produtos_user(utilizador_id)
     request.session['categorias'] = categorias
-    return render(request, 'index.html', {'produtos': produtos, 'produtos_stock': produtos_stock})
+    return render(request, 'index.html', {'produtos': produtos, 'produtos_stock': produtos_stock, 'produtos_user': produtos_user})
 
 def procurar_produto(request):
     titulo = 'Resultados da sua pesquisa'

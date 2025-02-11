@@ -1002,6 +1002,59 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+--Obter recomendações produtos semelhantes comprados pelo o user sem peso de cada compra
+CREATE OR REPLACE FUNCTION recomendar_produtos_user_sem_peso(utilizador_id INT, limite INT DEFAULT 4)
+RETURNS TABLE (produto_id INT, nome VARCHAR, descricao TEXT, preco DECIMAL, categoria_id INT, quantidade_em_stock INT) AS $$
+BEGIN
+    RETURN QUERY
+    SELECT p.produto_id, p.nome, p.descricao, p.preco, p.categoria_id, p.quantidade_em_stock
+    FROM produto p
+    WHERE p.categoria_id IN (
+        SELECT DISTINCT pr.categoria_id
+        FROM itens_encomenda ie
+        JOIN produto pr ON ie.produto_id = pr.produto_id
+        JOIN encomenda e ON ie.encomenda_id = e.encomenda_id
+        WHERE e.utilizador_id = recomendar_produtos_user.utilizador_id
+    )
+    AND p.produto_id NOT IN (
+        SELECT DISTINCT ie.produto_id
+        FROM itens_encomenda ie
+        JOIN encomenda e ON ie.encomenda_id = e.encomenda_id
+        WHERE e.utilizador_id = recomendar_produtos_user.utilizador_id
+    )
+    ORDER BY RANDOM()
+    LIMIT limite;
+END;
+$$ LANGUAGE plpgsql;
+
+--Recomendar produtos ao utilizador tomando como base as categorias de compras anteriores. 
+--Quantas mais compras em uma categoria mais peso terá essa categoria para as recomendações
+CREATE OR REPLACE FUNCTION recomendar_produtos_user(utilizador_id INT, limite INT DEFAULT 4)
+RETURNS TABLE (produto_id INT, nome VARCHAR, descricao TEXT, preco DECIMAL, categoria_id INT, quantidade_em_stock INT) AS $$
+BEGIN
+    RETURN QUERY
+    WITH categorias_com_peso AS (
+        SELECT pr.categoria_id, COUNT(*) AS peso
+        FROM itens_encomenda ie
+        JOIN produto pr ON ie.produto_id = pr.produto_id
+        JOIN encomenda e ON ie.encomenda_id = e.encomenda_id
+        WHERE e.utilizador_id = recomendar_produtos_user.utilizador_id
+        GROUP BY pr.categoria_id
+    )
+    SELECT p.produto_id, p.nome, p.descricao, p.preco, p.categoria_id, p.quantidade_em_stock
+    FROM produto p
+    JOIN categorias_com_peso c ON p.categoria_id = c.categoria_id
+    WHERE p.produto_id NOT IN (
+        SELECT ie.produto_id
+        FROM itens_encomenda ie
+        JOIN encomenda e ON ie.encomenda_id = e.encomenda_id
+        WHERE e.utilizador_id = recomendar_produtos_user.utilizador_id
+    )
+    ORDER BY RANDOM() * (1.0 / c.peso) 
+    LIMIT limite;
+END;
+$$ LANGUAGE plpgsql;
+
 --Views
 --View Encomendas
 CREATE VIEW vw_encomendas_utilizador AS

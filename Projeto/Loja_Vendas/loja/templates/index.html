@@ -8,56 +8,68 @@
 <style>
     .categorias-container {
         display: flex;
-        flex-wrap: wrap; /* Permite que as categorias quebrem linha em telas menores */
+        flex-wrap: wrap;
+        /* Permite que as categorias quebrem linha em telas menores */
         justify-content: center;
         gap: 15px;
         padding: 20px;
     }
-    
+
     .categoria-card {
         display: flex;
         align-items: center;
         justify-content: center;
         text-decoration: none;
-        color: #333; /* Cor mais escura para melhor leitura */
+        color: #333;
+        /* Cor mais escura para melhor leitura */
         font-size: 1.2rem;
         font-weight: 500;
-        background-color:rgb(168, 165, 165); /* Fundo mais moderno */
-        border: 2px solid transparent; /* Borda invisível para evitar movimentação ao passar o mouse */
-        border-radius: 8px; /* Mantendo o efeito de "chip" */
+        background-color: rgb(168, 165, 165);
+        /* Fundo mais moderno */
+        border: 2px solid transparent;
+        /* Borda invisível para evitar movimentação ao passar o mouse */
+        border-radius: 8px;
+        /* Mantendo o efeito de "chip" */
         padding: 12px 25px;
-        transition: all 0.3s ease-in-out; /* Suaviza todas as transições */
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Sombras mais suaves */
+        transition: all 0.3s ease-in-out;
+        /* Suaviza todas as transições */
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        /* Sombras mais suaves */
         cursor: pointer;
-        text-transform: capitalize; /* Torna a primeira letra maiúscula */
+        text-transform: capitalize;
+        /* Torna a primeira letra maiúscula */
     }
-    
+
     .categoria-card:hover {
-        transform: translateY(-3px); /* Pequeno efeito de elevação ao passar o mouse */
+        transform: translateY(-3px);
+        /* Pequeno efeito de elevação ao passar o mouse */
         background-color: #007bff;
         color: white;
-        border: 2px solid #0056b3; /* Adiciona uma borda visível ao passar o mouse */
-        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15); /* Sombra mais evidente */
+        border: 2px solid #0056b3;
+        /* Adiciona uma borda visível ao passar o mouse */
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        /* Sombra mais evidente */
     }
-    
+
     .categoria-card span {
         font-size: 1.1rem;
         font-weight: bold;
     }
-    
+
     /* Responsividade para telas menores */
     @media (max-width: 600px) {
         .categorias-container {
             flex-direction: column;
             align-items: center;
         }
-    
+
         .categoria-card {
-            width: 90%; /* Ajusta o tamanho dos cards em telas menores */
+            width: 90%;
+            /* Ajusta o tamanho dos cards em telas menores */
             text-align: center;
         }
     }
-    
+
 
     .container {
         display: flex;
@@ -70,7 +82,7 @@
         max-width: 1400px;
         margin: 0 auto;
     }
-    
+
     .card {
         display: flex;
         flex-direction: column;
@@ -79,44 +91,47 @@
         box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
         overflow: hidden;
         width: 320px;
-        height: 480px; /* Altura fixa para todos os cards */
+        height: 480px;
+        /* Altura fixa para todos os cards */
         text-align: center;
         transition: transform 0.3s ease-in-out, box-shadow 0.3s;
         padding: 15px;
     }
-    
+
     .card img {
         width: 100%;
         height: 220px;
         object-fit: cover;
         border-radius: 8px;
     }
-    
+
     .card h3 {
         font-size: 1.4rem;
         color: #444;
         margin: 12px 0;
     }
-    
+
     .card p {
         font-size: 1rem;
         color: #666;
         padding: 0 15px;
-        height: 50px; /* Define um tamanho fixo para a descrição */
+        height: 50px;
+        /* Define um tamanho fixo para a descrição */
         overflow: hidden;
         text-overflow: ellipsis;
         display: -webkit-box;
-        -webkit-line-clamp: 2; /* Limita a duas linhas */
+        -webkit-line-clamp: 2;
+        /* Limita a duas linhas */
         -webkit-box-orient: vertical;
     }
-    
+
     .price {
         font-size: 1.6rem;
         font-weight: bold;
         color: #d9534f;
         margin: 10px 0;
     }
-    
+
     .card button {
         background-color: #198754;
         color: white;
@@ -126,15 +141,16 @@
         border-radius: 8px;
         font-size: 1rem;
         transition: background-color 0.3s;
-        margin-top: auto; /* Mantém o botão sempre na parte inferior */
+        margin-top: auto;
+        /* Mantém o botão sempre na parte inferior */
     }
-    
+
     .card button:hover {
         background-color: #218838;
     }
-    
-    
-    
+
+
+
     /* Tags de Destaque */
     .tag-novo,
     .tag-promocao {
@@ -181,7 +197,8 @@
 
     /* Container escuro para os títulos */
     .title-container {
-        background-color: #555; /* Cor mais escura */
+        background-color: #555;
+        /* Cor mais escura */
         color: white;
         padding: 15px;
         text-align: center;
@@ -258,6 +275,32 @@
     </a>
     {% endfor %}
 </div>
+
+<!-- Produtos Recomendados para o User -->
+<div class="title-container">
+    ❤️ Produtos Recomendados Apenas Para Si ❤️
+</div>
+<div class="container">
+    {% for produto in produtos_user %}
+    <a href="{% url 'produto_detalhe' produto_id=produto.produto_id %}" class="card">
+        <div class="tag-novo" {% if produto.novo %} style="display:block;" {% else %} style="display:none;" {% endif %}>
+            Novo 🔥
+        </div>
+        <img src="{% static 'images/monitor_escuro.jpg' %}" alt="{{ produto.nome }}">
+        <h3>{{ produto.nome }}</h3>
+        <p>{{ produto.descricao|default:"Descrição não disponível." }}</p>
+        <div class="price">{{ produto.preco }} €</div>
+        <div class="stock {% if produto.quantidade_em_stock == 0 %} esgotado {% endif %}">
+            {% if produto.quantidade_em_stock > 0 %}
+            Em stock: {{ produto.quantidade_em_stock }}
+            {% else %}
+            ESGOTADO ❌
+            {% endif %}
+        </div>
+        <button {% if produto.quantidade_em_stock|default:0 == 0 %} disabled {% endif %}>Comprar Agora</button>
+    </a>
+    {% endfor %}
+</div>
 <!-- Script atualizado para alternar a seta -->
 <script>
     function toggleFiltros() {
@@ -278,7 +321,7 @@
     }
 
     // Garante que os filtros estão escondidos ao carregar a página
-    document.addEventListener("DOMContentLoaded", function() {
+    document.addEventListener("DOMContentLoaded", function () {
         document.getElementById("categorias").style.display = "none";
     });
 </script>
