@@ -1056,7 +1056,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-SELECT * FROM recomendar_produtos_user(1)
+
 --Views
 --View Encomendas
 CREATE VIEW vw_encomendas_utilizador AS
@@ -1093,7 +1093,7 @@ SELECT
 FROM utilizador;
 
 --View Produto
-CREATE VIEW view_produto AS
+CREATE OR REPLACE VIEW view_produto AS
 SELECT 
     p.produto_id,
     p.nome AS produto_nome,
@@ -1106,7 +1106,9 @@ SELECT
 FROM 
     produto p
 JOIN 
-    categoria c ON p.categoria_id = c.categoria_id;
+    categoria c ON p.categoria_id = c.categoria_id
+	ORDER BY 
+    p.produto_id; 
 
 --View Fornecedor	
 CREATE VIEW view_fornecedor AS

@@ -46,30 +46,46 @@ SELECT sp_Fornecedor_CREATE('Smartphone World', 'info@smartworld.com', 'Centro E
 
 --Requisição de Produtos
 SELECT sp_RequisicaoProduto_CREATE(1, 1, 20, '2024-02-08 10:00:00');
-SELECT sp_RequisicaoProduto_CREATE(2, 3, 10, '2024-02-07 15:30:00');
-SELECT sp_RequisicaoProduto_CREATE(3, 6, 5, '2024-02-06 12:45:00');
-SELECT sp_RequisicaoProduto_CREATE(1, 1, 20, '2025-02-10 10:00:00'); -- Google Pixel 7
-SELECT sp_RequisicaoProduto_CREATE(1, 2, 15, '2025-02-10 10:30:00'); -- Xiaomi Mi 13
-SELECT sp_RequisicaoProduto_CREATE(2, 6, 25, '2025-02-11 09:00:00'); -- Headset HyperX Cloud II
-SELECT sp_RequisicaoProduto_CREATE(2, 9, 10, '2025-02-11 09:15:00'); -- Intel Core i9-13900K
-SELECT sp_RequisicaoProduto_CREATE(3, 10, 12, '2025-02-12 14:00:00'); -- AMD Ryzen 9 7950X
-SELECT sp_RequisicaoProduto_CREATE(3, 12, 30, '2025-02-12 14:30:00'); -- Corsair Vengeance 32GB DDR5
-SELECT sp_RequisicaoProduto_CREATE(4, 3, 18, '2025-02-13 11:00:00'); -- OnePlus 11
-SELECT sp_RequisicaoProduto_CREATE(4, 15, 8, '2025-02-13 11:20:00'); -- Samsung Odyssey G9
+SELECT sp_RequisicaoProduto_CREATE(2, 2, 10, '2024-02-07 15:30:00');
+SELECT sp_RequisicaoProduto_CREATE(3, 3, 5, '2024-02-06 12:45:00');
+SELECT sp_RequisicaoProduto_CREATE(1, 4, 20, '2025-02-10 10:00:00'); 
+SELECT sp_RequisicaoProduto_CREATE(1, 5, 15, '2025-02-10 10:30:00'); 
+SELECT sp_RequisicaoProduto_CREATE(2, 6, 25, '2025-02-11 09:00:00'); 
+SELECT sp_RequisicaoProduto_CREATE(2, 7, 10, '2025-02-11 09:15:00'); 
+SELECT sp_RequisicaoProduto_CREATE(3, 8, 12, '2025-02-12 14:00:00'); 
+SELECT sp_RequisicaoProduto_CREATE(3, 9, 30, '2025-02-12 14:30:00'); 
+SELECT sp_RequisicaoProduto_CREATE(4, 10, 18, '2025-02-13 11:00:00'); 
+SELECT sp_RequisicaoProduto_CREATE(4, 11, 8, '2025-02-13 11:20:00');
+SELECT sp_RequisicaoProduto_CREATE(5, 12, 20, '2024-02-08 10:00:00');
+SELECT sp_RequisicaoProduto_CREATE(5, 13, 10, '2024-02-07 15:30:00');
+SELECT sp_RequisicaoProduto_CREATE(5, 14, 5, '2024-02-06 12:45:00');
+SELECT sp_RequisicaoProduto_CREATE(6, 15, 20, '2025-02-10 10:00:00'); 
+SELECT sp_RequisicaoProduto_CREATE(6, 16, 15, '2025-02-10 10:30:00'); 
+SELECT sp_RequisicaoProduto_CREATE(6, 17, 25, '2025-02-11 09:00:00'); 
+SELECT sp_RequisicaoProduto_CREATE(6, 18, 10, '2025-02-11 09:15:00'); 
+SELECT sp_RequisicaoProduto_CREATE(7, 19, 12, '2025-02-12 14:00:00'); 
 
 
 --Faturas Fornecedores
-SELECT sp_FaturaFornecedor_CREATE(1, 19999.80);
-SELECT sp_FaturaFornecedor_CREATE(2, 12999.90);
-SELECT sp_FaturaFornecedor_CREATE(4, 7499.95);
-SELECT sp_FaturaFornecedor_CREATE(1, 15999.80); -- Pixel 7 + Xiaomi Mi 13
-SELECT sp_FaturaFornecedor_CREATE(1, 5249.85); -- Xiaomi Mi 13
-SELECT sp_FaturaFornecedor_CREATE(2, 2499.75); -- Headset HyperX Cloud II
-SELECT sp_FaturaFornecedor_CREATE(2, 5999.90); -- Intel Core i9-13900K
-SELECT sp_FaturaFornecedor_CREATE(3, 6599.88); -- AMD Ryzen 9 7950X
-SELECT sp_FaturaFornecedor_CREATE(3, 5099.70); -- Corsair Vengeance 32GB DDR5
-SELECT sp_FaturaFornecedor_CREATE(4, 13139.82); -- OnePlus 11
-SELECT sp_FaturaFornecedor_CREATE(4, 11999.92); -- Samsung Odyssey G9
+SELECT sp_FaturaFornecedor_CREATE(1, 500.00);
+SELECT sp_FaturaFornecedor_CREATE(2, 300.00);
+SELECT sp_FaturaFornecedor_CREATE(3, 150.00);
+SELECT sp_FaturaFornecedor_CREATE(1, 700.00); 
+SELECT sp_FaturaFornecedor_CREATE(1, 600.00); 
+SELECT sp_FaturaFornecedor_CREATE(2, 750.00); 
+SELECT sp_FaturaFornecedor_CREATE(2, 400.00); 
+SELECT sp_FaturaFornecedor_CREATE(3, 600.00); 
+SELECT sp_FaturaFornecedor_CREATE(3, 900.00); 
+SELECT sp_FaturaFornecedor_CREATE(4, 500.00); 
+SELECT sp_FaturaFornecedor_CREATE(4, 350.00);
+SELECT sp_FaturaFornecedor_CREATE(5, 550.00);
+SELECT sp_FaturaFornecedor_CREATE(5, 450.00);
+SELECT sp_FaturaFornecedor_CREATE(5, 200.00);
+SELECT sp_FaturaFornecedor_CREATE(6, 800.00); 
+SELECT sp_FaturaFornecedor_CREATE(6, 650.00); 
+SELECT sp_FaturaFornecedor_CREATE(6, 1000.00); 
+SELECT sp_FaturaFornecedor_CREATE(6, 550.00); 
+SELECT sp_FaturaFornecedor_CREATE(7, 350.00); 
 
 --Encomendas
 SELECT sp_Encomenda_Com_Itens_CREATE(
