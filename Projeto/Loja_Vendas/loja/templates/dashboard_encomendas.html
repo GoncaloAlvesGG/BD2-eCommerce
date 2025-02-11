@@ -253,17 +253,17 @@
         Swal.fire({
             title: 'Exportar Relatório',
             html: `
-            <label for="data-inicio">Data de Início:</label>
-            <input type="date" id="data-inicio" class="swal2-input">
-            <label for="data-fim">Data de Fim:</label>
-            <input type="date" id="data-fim" class="swal2-input">
+            <label for="data-inicio-excel">Data de Início:</label>
+            <input type="date" id="data-inicio-excel" class="swal2-input">
+            <label for="data-fim-excel">Data de Fim:</label>
+            <input type="date" id="data-fim-excel" class="swal2-input">
         `,
             showCancelButton: true,
             confirmButtonText: 'Exportar',
             cancelButtonText: 'Cancelar',
             preConfirm: () => {
-                const dataInicio = document.getElementById('data-inicio').value;
-                const dataFim = document.getElementById('data-fim').value;
+                const dataInicio = document.getElementById('data-inicio-excel').value;
+                const dataFim = document.getElementById('data-fim-excel').value;
 
                 if (!dataInicio || !dataFim) {
                     Swal.showValidationMessage('Por favor, preencha ambas as datas.');
