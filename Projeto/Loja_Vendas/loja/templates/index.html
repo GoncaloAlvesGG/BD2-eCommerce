@@ -277,6 +277,7 @@
 </div>
 
 <!-- Produtos Recomendados para o User -->
+{% if produtos_user %}
 <div class="title-container">
     ❤️ Produtos Recomendados Apenas Para Si ❤️
 </div>
@@ -301,6 +302,7 @@
     </a>
     {% endfor %}
 </div>
+{% endif %}
 <!-- Script atualizado para alternar a seta -->
 <script>
     function toggleFiltros() {

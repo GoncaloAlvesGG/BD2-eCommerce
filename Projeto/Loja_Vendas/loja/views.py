@@ -209,6 +209,9 @@ def obter_faturas_fornecedor(request, fornecedor_id):
 
 
 def registo(request):
+    storage = messages.get_messages(request)
+    storage.used = True  # Marca todas como usadas
+    
     if request.method == "POST":
         nome = request.POST['nome']
         email = request.POST['email']
