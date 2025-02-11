@@ -1029,6 +1029,7 @@ $$ LANGUAGE plpgsql;
 
 --Recomendar produtos ao utilizador tomando como base as categorias de compras anteriores. 
 --Quantas mais compras em uma categoria mais peso terá essa categoria para as recomendações
+--Produtos já comprados não são recomendados!
 CREATE OR REPLACE FUNCTION recomendar_produtos_user(utilizador_id INT, limite INT DEFAULT 4)
 RETURNS TABLE (produto_id INT, nome VARCHAR, descricao TEXT, preco DECIMAL, categoria_id INT, quantidade_em_stock INT) AS $$
 BEGIN
@@ -1050,11 +1051,12 @@ BEGIN
         JOIN encomenda e ON ie.encomenda_id = e.encomenda_id
         WHERE e.utilizador_id = recomendar_produtos_user.utilizador_id
     )
-    ORDER BY RANDOM() * (1.0 / c.peso) 
+    ORDER BY RANDOM() * c.peso
     LIMIT limite;
 END;
 $$ LANGUAGE plpgsql;
 
+SELECT * FROM recomendar_produtos_user(1)
 --Views
 --View Encomendas
 CREATE VIEW vw_encomendas_utilizador AS
